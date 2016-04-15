@@ -1,0 +1,209 @@
+class SudokuGrid {
+
+    var grid_ : Int[];
+    var currentLine_ : Int;
+    var currentColumn_ : Int;
+    var garbage_ : Bool;
+
+    method init() : SudokuGrid = {
+        var i : Int;
+
+        grid_ = new Int[81];
+        currentLine_ = 0;
+        currentColumn_ = 0;
+        i = 0;
+        while (i < grid_.length) {
+            grid_[i] = 0;
+            i = i + 1
+        };
+        self
+    }
+
+    method test1() : String = {
+        /* fill the sudoku grid */
+        garbage_ = self.set(0, 0, 1);
+        garbage_ = self.set(0, 5, 7);
+        garbage_ = self.set(0, 7, 9);
+        garbage_ = self.set(1, 1, 3);
+        garbage_ = self.set(1, 4, 2);
+        garbage_ = self.set(1, 8, 8);
+        garbage_ = self.set(2, 2, 9);
+        garbage_ = self.set(2, 3, 6);
+        garbage_ = self.set(2, 6, 5);
+        garbage_ = self.set(3, 2, 5);
+        garbage_ = self.set(3, 3, 3);
+        garbage_ = self.set(3, 6, 9);
+        garbage_ = self.set(4, 1, 1);
+        garbage_ = self.set(4, 4, 8);
+        garbage_ = self.set(4, 8, 2);
+        garbage_ = self.set(5, 0, 6);
+        garbage_ = self.set(5, 5, 4);
+        garbage_ = self.set(6, 0, 3);
+        garbage_ = self.set(6, 7, 1);
+        garbage_ = self.set(7, 1, 4);
+        garbage_ = self.set(7, 8, 7);
+        garbage_ = self.set(8, 2, 7);
+        garbage_ = self.set(8, 6, 3);
+
+        println("~~~~ Original sudoku ~~~~");
+        garbage_ = self.display();
+        println("Solving sudoku...");  
+        if (self.solve()) {
+            println("~~~~~ Solved sudoku ~~~~~");
+            garbage_ = self.display()
+        } else {
+            println("Couldn't solve this sudoku :-(")
+        };
+        ""
+    }
+
+    method set(line : Int, column : Int, value : Int) : Bool = {
+        grid_[line * 9 + column] = value;
+        true
+    }
+    
+    method get(line : Int, column : Int) : Int = {
+        grid_[line * 9 + column]
+    }
+
+    /* backtracking algorithm */
+    method solve() : Bool = {
+        var line : Int;
+        var column : Int;
+        var value : Int;
+        var result : Bool;
+
+        if(!self.findNextUnset()) result = true
+        else result = false;
+        line = currentLine_; 
+        column = currentColumn_;
+
+        value = 1;
+        while (value < 10 && result == false) {
+            if (self.isCompatible(line, column, value)) {
+                garbage_ = self.set(line, column, value);
+                if (self.solve()) {
+                    result = true
+                } else {
+                    garbage_ = self.set(line, column, 0);
+                    currentLine_ = line;
+                    currentColumn_ = column
+                }
+            };
+            value = value + 1
+        };
+        result
+    }
+
+    method findNextUnset() : Bool = {
+        var result : Bool;
+        
+        result = false;
+        while (currentLine_ < 9 && result == false) {
+            while (currentColumn_ < 9 && result == false) {
+                if (self.isSet(currentLine_, currentColumn_)) currentColumn_ = currentColumn_ + 1
+                else result = true
+            };
+            if (result == false) {
+                currentLine_ = currentLine_ + 1;
+                currentColumn_ = 0
+            }
+        };
+        result
+    }
+
+    method isSet(line : Int, column : Int) : Bool = {
+        0 < self.get(line, column) && self.get(line, column) < 10
+    }
+
+    method isCompatible(line : Int, column : Int, value : Int) : Bool = {
+        !self.appearInLine(line, value) && 
+        !self.appearInColumn(column, value) &&
+        !self.appearInBlock(line, column, value)
+    }
+
+    method appearInLine(line : Int, value : Int) : Bool = {
+        var column : Int;
+        var result : Bool;
+
+        column = 0;
+        result = false;
+        while (column < 9 && result == false) {
+            if (self.get(line, column) == value) result = true;
+            column = column + 1
+        };
+        result
+    }
+
+
+    method appearInColumn(column : Int, value : Int) : Bool = {
+        var line : Int;
+        var result : Bool;
+
+        line = 0;
+        result = false;
+        while (line < 9 && result == false) {
+            if (self.get(line, column) == value) result = true;
+            line = line + 1
+        };
+        result
+    }
+
+    method appearInBlock(line : Int, column : Int, value : Int) : Bool = {
+        var i : Int;
+        var j : Int;
+        var firstLine : Int;
+        var firstColumn : Int;
+        var result : Bool;
+
+        firstLine = line / 3 * 3;
+        firstColumn = column / 3 * 3;
+        i = 0;
+        result = false;
+        while (i < 3 && result == false) {
+            j = 0;
+            while (j < 3 && result == false) {
+                if (self.get(firstLine + i, firstColumn + j) == value) result = true;
+                j = j + 1
+            };
+            i = i + 1
+        };
+        result
+    }
+
+    method display() : Bool = {
+        var i : Int;
+        var separator : String;
+
+        i = 0;
+        separator = "+-------+-------+-------+";
+        while (i < 9) {
+            if (self.mod(i, 3) == 0) println(separator);
+            println(self.lineDisplay(i));
+            i = i + 1
+        };
+        println(separator);
+        true
+    }
+
+    method lineDisplay(line : Int) : String = {
+        var column : Int;
+        var result : String;
+
+        column = 0;
+        result = "";
+        while (column < 9) {
+           if (self.mod(column, 3) == 0) result = result + "| ";
+           if (self.isSet(line, column)) result = result + self.get(line, column) + " "
+           else result = result + "  ";
+           column = column + 1
+        };
+        result + "|"
+    }
+
+    method mod(i : Int, j : Int) : Int = { i - (i / j * j) }
+}
+
+method main() : Unit = {
+    println(new SudokuGrid().init().test1())
+}

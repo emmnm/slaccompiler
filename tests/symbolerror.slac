@@ -1,0 +1,19 @@
+class Apple {
+  method foo(): Int = {
+    value = 42;
+    value
+  }
+}
+
+class Pear <: Apple {
+  var value: Int;
+  method foo(): Int = {
+    var value: Bool;
+    value = false;
+    41
+  }
+}
+
+method main(): Unit = {
+  println(new B().foo())
+}

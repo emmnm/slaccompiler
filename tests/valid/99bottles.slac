@@ -1,0 +1,29 @@
+
+// This is a simple implementation of '99 bottles of beer' in SLAC.
+// I guess everyone saw that one coming :)
+
+class DrunkPirate {
+    method sing(): Bool = {
+        self.verse(99);
+        true
+    }
+
+    method verse(number: Int) : Int  = {
+        println(self.bottles(number) + " of beer on the wall, take one down, pass it around, " + self.bottles(number - 1) + " of beer on the wall.");
+        if (1 < number) {
+	  self.verse(number - 1)
+	} else {
+	  0
+	}
+    }
+
+    method bottles(number: Int) : String = {
+        if (number == 0) { "no more bottles" } else {
+            if (number == 1) "1 bottle" else number + " bottles"
+        }
+    }
+}
+
+method main() : Unit = {
+    if (new DrunkPirate().sing()) println("Done!")
+}

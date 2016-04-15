@@ -1,0 +1,13 @@
+class Fact {
+    method computeFactorial(num : Int) : Int = {
+        var num_aux : Int;
+        if (num < 1)
+            num_aux = 1
+        else
+            num_aux = num * (self.computeFactorial(num - 1));
+        num_aux
+    }
+}
+method main() : Unit = {
+    println(new Fact().computeFactorial(10))
+}

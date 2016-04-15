@@ -1,0 +1,7 @@
+class A {
+    method foo(a : Int, b: Int, ) : retType = {
+        12
+    }
+}
+
+method main() : Unit = { println("42") }

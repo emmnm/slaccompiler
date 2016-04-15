@@ -1,0 +1,6 @@
+class A {
+    var a : Int;
+    var b : Bool
+}
+
+method main() : Unit = { println("42") }

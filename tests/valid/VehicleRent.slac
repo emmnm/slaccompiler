@@ -1,0 +1,210 @@
+// This programm simulates a very simple car and truck renting agency
+// It can specially be used to test inheritance (the Car and Truck 
+// classes extends from the Vehicle class) 
+
+// The renting agecy
+class RentingAgency {
+   // simulates an example day in a renting agency
+   method exampleDay() : String = {
+      var client1 : Client;
+      var client2 : Client;
+      var client3 : Client;
+      
+      var car1 : Car;
+      var car2 : Car;
+      
+      var truck1 : Truck;
+      var truck2 : Truck;
+      
+      client1 = new Client();
+      client2 = new Client();
+      client3 = new Client();
+      
+      car1 = new Car();
+      car2 = new Car();
+      
+      truck1 = new Truck();
+      truck2 = new Truck();
+      
+      println(car1.init(27275,"Ferrari",2));
+      println(car2.init(32113,"VW",7));
+      println(truck1.init(12879,"Opel",40));
+      println(truck2.init(99234,"Renault",56));
+      println(client1.create(1,"Charlie Sheen"));
+      println(client2.create(2,"Angelina Jolie"));
+      println(client3.create(3,"Cameron Diaz"));
+      println("");
+      
+      println("----- START OF THE EXAMPLE DAY OF A RENTING AGENCY -----");
+      println("");
+      println(self.checkout(client1,car1));
+      println(self.checkout(client2,car1));
+      println(self.checkout(client1,car2));
+      println(self.checkin(client1,car1,453));
+      println(self.checkout(client3, truck2));
+      println(self.checkout(client3, truck1));
+      println(self.checkout(client2, car1)); 
+      println(self.checkin(client3,truck2,1011));
+      println(self.checkin(client2,car1,123));     
+      "------ END OF THE EXAMPLE DAY OF A RENTING AGENCY ------"
+   }
+   
+   // the given client tries to rent the given vehicle
+   method checkout(client : Client, vehicle : Vehicle) : String = {
+      println(" " + client.rent(vehicle));
+      ""
+   }
+   
+   // the given client tries to return the given vehicle
+   method checkin(client : Client, vehicle : Vehicle, milage : Int) : String = {
+      println(" " + client.restore(vehicle, milage));
+      ""
+   }
+}
+
+// The client class stores all the needed information about a client
+// (A client can just rent one vehicle on the same time)
+class Client {
+   // general client attributes
+   var clientNumber : Int;
+   var name : String;
+   
+   // information about the rented vehicle
+   var rent : Bool;
+   var rentedVehicle : Int;
+   
+   // creates the client (should be called only once!)
+   method create(nb : Int,n : String) : String = {
+      var msg : String;
+      
+      clientNumber = nb;
+      name = n;
+      msg = "CREATE : Client " + clientNumber + " (" + name + ") created!";
+      
+      msg
+   }
+   
+   // the client wants to rent a vehicle
+   method rent(vehicle : Vehicle) : String = {
+      var msg : String;
+      
+      if(rent || vehicle.getRented()) {
+         if(rent) {
+            msg = "NO RENT : " + name + " has already #" + rentedVehicle + " (1 vehicle/client)"
+         } else {
+            msg = "NO RENT : " + name + " can't rent #" + vehicle.getNumber() + " (already in use)"
+         }
+      }else{
+         rent = true;
+         rentedVehicle = vehicle.getNumber();
+         msg = "RENT : " + name + " just rented : " + vehicle.checkout()
+      };
+      msg
+   }
+   
+   // the client returns a vehicle
+   method restore(vehicle : Vehicle, milage : Int) : String = {
+      var msg : String;
+      
+      if(rent && vehicle.getRented() && rentedVehicle == vehicle.getNumber()) {
+         rent = false;
+         rentedVehicle = 0;
+         
+         msg = "RETURN : " + name + " just brought back : " + vehicle.checkin(milage)
+      } else {
+         msg = "NO RETURN : " + name + " didn't rent #" + vehicle.getNumber() + " or the vehicle is already back!"
+      };
+      msg
+   }
+}
+
+// The general class Vehicle contains all the variables and methods
+// that cars and trucks share together
+class Vehicle {
+   // general attributes
+   var number : Int;
+   var milage : Int;
+   var brand : String;
+   
+   // true = vehicle rented, false = vehicle available
+   var rented : Bool;
+   
+   // checkout the vehicle after a client rented it
+   method checkout() : String = {
+      rented = true;  
+      self.description()
+   }
+   
+   // checkin the vehicle after the client brought it back
+   method checkin(mil : Int) : String = {
+      rented = false;
+      milage = milage + mil;    
+      self.description()
+   }
+   
+   // gives a string with the cars attributes
+   method description() : String = {
+      var descr : String;
+      descr = "#" + number + ", " + brand + ", " + milage + "km";
+      descr
+   }
+   
+   method getNumber() : Int = {
+      number
+   }
+   
+   method getMilage() : Int = {
+      milage
+   }
+   
+   method getBrand() : String = {
+      brand
+   }
+   
+   method getRented() : Bool = {
+      rented
+   }
+
+}
+
+// The class for cars
+class Car <: Vehicle {
+   // number of seats in the car
+   var nbSeats : Int;
+   
+   // initialize the new car (should be called only once)
+   method init(nb : Int, br : String, seats : Int) : String = {
+      number = nb;
+      brand = br;
+      milage = 0;
+      nbSeats = seats;
+      "CAR ADDED: #" + number + ", " + brand + ", " + nbSeats + " seats"
+   }
+   
+   method getNbSeats() : Int = {
+      nbSeats
+   }    
+}
+
+// The class for trucks
+class Truck <: Vehicle {
+   // max. weight in tons
+   var maxWeight : Int;
+   
+   // initialize the new truck (should be called only once)
+   method init(nb : Int, br : String, weight : Int) : String = {
+      number = nb;
+      brand = br;
+      milage = 0;
+      maxWeight = weight;
+      "TRUCK ADDED : #" + number + ", " + brand + ", " + maxWeight + "t"
+   }
+   
+   method getMaxWeight() : Int = {
+      maxWeight
+   }
+}
+
+method main() : Unit = {
+    println(new RentingAgency().exampleDay())
+}

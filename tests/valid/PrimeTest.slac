@@ -1,0 +1,76 @@
+class primeTest {
+
+  var n : Int;
+  var tab : Int[];
+
+  method mod(m : Int, n : Int) : Int = {
+    m - (n * (m / n))
+  }
+
+
+  method test(c : Int) : Bool =
+    {
+    var i: Int;
+    var a : Int;
+    var l: Int;
+    var toReturn : Bool;
+    toReturn = true;
+    if(!(c == 2)) {
+    i = 0;
+    l = 0;
+    a=self.mod(c,2);
+    if(0==a) {
+      toReturn = false
+    } else {
+      i=3;
+      l=c/2;
+      while(toReturn && i<l)
+        {
+        a=self.mod(c,i);
+        if(a==0)
+          {
+          toReturn = false
+        };
+        i=i+2
+      }
+    }};
+    toReturn
+  }
+
+  method print() : Int = {
+    println("print() ??");
+    0
+  }
+
+  method init() : Int = {
+    var j : Int;
+    n=10;
+    tab = new Int[10];
+    tab[0]=2;
+    tab[1]=23;
+    tab[2]=225;
+    tab[3]=32;
+    tab[4]=5;
+    tab[5]=89;
+    tab[6]=30;
+    tab[7]=2;
+    tab[8]=10;
+    tab[9]=1733;
+
+    j = 0 ;
+    while (j < n) {
+      println("Is "+tab[j]+" prime ?");
+      println(self.test(tab[j]));
+      j = j + 1
+    };
+
+
+    0
+  }
+
+
+}
+
+method main() : Unit = {
+  println(new primeTest().init())
+}

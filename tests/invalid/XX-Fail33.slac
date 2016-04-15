@@ -1,0 +1,9 @@
+class A {
+    method foo() : retType = {
+        // there should be no unary minus!
+        z = -z;
+        12
+    }
+}
+
+method main() : Unit = { println("42") }

@@ -1,0 +1,295 @@
+// This program must be run in a VT100 compatible terminal to get the
+// intended result. (EDIT search for 'clear' and uncomment if needed.)
+
+// NOTE: In the code that follows, there are spurious variables named
+// 'bitbucket'. They may or may not be needed due to syntax requirements
+// of SLAC. :)
+
+class Matrix {
+  // We implement a matrix of integers using a single, unfolded array
+  // of integers, and storing the matrix row after row.
+
+  var elements : Int[];			// store of elements
+  var cols     : Int;			// number of columns
+  
+  method init(n : Int, m : Int) : Matrix = {
+    // inits the matrix, but elements will be undefined
+    cols = m; elements = new Int[n*m];
+    this
+  }
+
+  method unfold(i : Int, j : Int) : Int = {
+    // returns the unfolded equivalent of index (i,j)
+    cols*(i-1) + (j-1)
+  }
+
+  method index(i : Int, j : Int) : Int = {
+    // returns the element in row i column j
+    elements[this.unfold(i,j)]
+  }
+
+  method assign(i : Int, j : Int, x : Int) : Int = {
+    // sets a new value for element at index (i,j)
+    elements[this.unfold(i,j)] = x;
+    x
+  }
+}
+
+class Board {
+  // The board is just a matrix with some additional operations
+  // relevant to the game.
+  var cells : Matrix;			// cell store (matrix)
+  var rows  : Int;			// horizontal size of the board
+  var cols  : Int;			// vertical size of the board
+
+  method init(n : Int, m : Int) : Board = {
+    // inits the board; initial state: every cell dead
+    var i : Int;
+    var j : Int;
+
+    var bitbucket : Int;
+  
+    cells = new Matrix().init(n,m);	// empty store
+    rows  = n;				// vertical size
+    cols  = m;				// horizontal size
+
+    // initial matrix undefined, init every element
+    i = 1; j = 1;
+    while (i < rows || i == rows) {
+      while (j < cols || j == cols) {
+	bitbucket = this.kill(i,j);
+	j = j + 1
+      };
+      i = i + 1;
+      j = 1
+    };
+
+    this
+  }
+
+  method alive(i : Int, j : Int) : Bool = {
+    // true if the cell at index (i,j) is alive
+    cells.index(i,j) == 1
+  }
+
+  method modulo(left : Int, right : Int) : Int = {
+    // modulo operator needed to simulate infinite board
+    var m : Int; m = left - right*(left/right);
+    if (m == 0) m = right; m	// hack
+  }
+
+  method vmodulo(n : Int) : Int = {
+    // modulo operator for rows
+    this.modulo(n, rows)
+  }
+
+  method hmodulo(n : Int) : Int = {
+    // modulo operator for cols
+    this.modulo(n, cols)
+  }
+
+  method n_neighbour(i : Int, j : Int) : Int = {
+    // 1 if northern neighbour is alive, 0 otherwise
+    cells.index(this.vmodulo(i-1),
+		this.hmodulo(j))
+  }
+
+  method ne_neighbour(i : Int, j : Int) : Int = {
+    // 1 if northeast neighbour is alive, 0 otherwise
+    cells.index(this.vmodulo(i-1),
+		this.hmodulo(j+1))
+  }
+
+  method nw_neighbour(i : Int, j : Int) : Int = {
+    // 1 if northwest neighbour is alive, 0 otherwise
+    cells.index(this.vmodulo(i-1),
+		this.hmodulo(j-1))
+  }
+
+  method e_neighbour(i : Int, j : Int) : Int = {
+    // 1 if east neighbour is alive, 0 otherwise
+    cells.index(this.vmodulo(i),
+		this.hmodulo(j-1))
+  }
+
+  method w_neighbour(i : Int, j : Int) : Int = {
+    // 1 if west neighbour is alive, 0 otherwise
+    cells.index(this.vmodulo(i),
+		this.hmodulo(j+1))
+  }
+
+  method s_neighbour(i : Int, j : Int) : Int = {
+    // 1 if south neighbour is alive, 0 otherwise
+    cells.index(this.vmodulo(i+1),
+		this.hmodulo(j))
+  }
+
+  method se_neighbour(i : Int, j : Int) : Int = {
+    // 1 if southeast neighbour is alive, 0 otherwise
+    cells.index(this.vmodulo(i+1),
+		this.hmodulo(j+1))
+  }
+
+  method sw_neighbour(i : Int, j : Int) : Int = {
+    // 1 if southwest neighbour is alive, 0 otherwise
+    cells.index(this.vmodulo(i+1),
+		this.hmodulo(j-1))
+  }
+
+  method neighbours(i : Int, j : Int) : Int = {
+    // number of alive neighbours of cell at (i,j)
+    this.nw_neighbour(i,j)
+      + this.n_neighbour(i,j)
+      + this.ne_neighbour(i,j)
+      + this.e_neighbour(i,j)
+      + this.w_neighbour(i,j)
+      + this.sw_neighbour(i,j)
+      + this.s_neighbour(i,j)
+      + this.se_neighbour(i,j)
+  }
+
+  method kill(i : Int, j : Int) : Int = {
+    // kill the cell at position (i,j)
+    cells.assign(i,j, 0)
+  }
+
+  method birth(i : Int, j : Int) : Int = {
+    // create a cell at position (i,j)
+    cells.assign(i,j, 1)
+  }
+}
+
+class Game {
+  // Using the previously defined board, we define a game using the
+  // rules.
+  var board : Board;			// already computed board
+  var rows  : Int;			// horizontal size of the board
+  var cols  : Int;			// horizontal size of the board
+
+  method init() : Game = {
+    // init with a default pattern
+    var bitbucket : Int;
+
+    rows  = 22;				 // vertical size
+    cols  = 80;				 // horizontal size
+    board = new Board().init(rows,cols); // initial dead board
+
+    // initial pattern: glider
+    bitbucket = board.birth(1,2);
+    bitbucket = board.birth(2,3);
+    bitbucket = board.birth(3,1);
+    bitbucket = board.birth(3,2);
+    bitbucket = board.birth(3,3);
+
+    this
+  }
+
+  method iterate() : Int = {
+    // perform one iteration of the game
+    var next : Board;
+    var i : Int;
+    var j : Int;
+    var n : Int;
+
+    var bitbucket : Int;
+
+    // new board that will substitute the current onte
+    next = new Board().init(rows,cols);
+
+    // check game conditions for every cell
+    i = 1; j = 1;
+    while (i < rows || i == rows) {
+      while (j < cols || j == cols) {
+	n = board.neighbours(i,j);
+	if (board.alive(i,j)) {
+	  if (n-2 < 0 || 3-n < 0)
+	    bitbucket = next.kill(i,j)	// (under|over)crowding
+	  else
+	    bitbucket = next.birth(i,j) // survival
+	} else {
+	  if (n == 3){
+	    bitbucket = next.birth(i,j)} // reproduction
+	  else
+	    bitbucket = next.kill(i,j)	// still dead
+	};
+	j = j + 1
+      };
+      i = i + 1;
+      j = 1
+    };
+
+    // new board computed, make it current
+    board = next;
+
+    rows*cols
+  }
+
+  method print() : String = {
+    // print a board on the screen
+    var i : Int;
+    var j : Int;
+
+    // build a line, then print
+    var m : String; m = "";
+
+    // check every cell state
+    i = 1; j = 1;
+    while (i < rows || i == rows) {
+      while (j < cols || j == cols) {
+	if (board.alive(i,j))
+	  m = m + "o"
+	else
+	  m = m + ".";
+	j = j + 1
+      };
+      println(m);
+      i = i + 1;
+      m = "";
+      j = 1
+    };
+
+    m
+  }
+
+  method wait() : Int = {
+    // delay to be able to "see" each iteration
+    var i : Int;
+
+    // use the game itself to eat cycles
+    var bitbucket1 : Game;
+    var bitbucket2 : Int;
+
+    // values chosen for my machine
+    bitbucket1 = new Game().init();
+    i = 0;
+    while (i < 1000) {
+      bitbucket2 = bitbucket1.iterate();
+      i = i + 1
+    };
+    
+    i
+  }
+
+  method run(n : Int) : String = {
+    // run n iterations of the game with a default pattern
+    var i : Int;
+
+    var bitbucket : Int;
+
+    i = 0;
+    while (i < n) {
+      /* Uncomment following line if you think your terminal can handle it. */
+      // println("[2J[H");		// clear screen
+      println(this.print());		// print current game
+      bitbucket = this.wait();		// wait, otherwise too fast
+      bitbucket = this.iterate();	// perform iteration
+      i = i + 1
+    };
+    ""
+  }
+}
+
+method main() : Unit = {
+  /* runs conway's game of life; see run() to change patterns */
+  println(new Game().init().run(10)) // 10000 iterations
+}

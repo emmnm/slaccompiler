@@ -1,0 +1,8 @@
+class A {
+    method foo() : retType = {
+        a = self.field;
+        12
+    }
+}
+
+method main() : Unit = { println("42") }
