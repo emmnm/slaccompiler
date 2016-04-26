@@ -58,7 +58,7 @@ object Printer {
 
     case t: True => "true" 
     case t: False => "false" 
-    case t: Identifier => t.value + (if(doSymbols) { "#" + t.getSymbol.id} else "")
+    case t: Identifier => t.value + (if(doSymbols) { "#" + t.getSymbol.id } else "")
     case t: Self => "self" 
     case t: NewIntArray => "new Int[" + apply(t.size) + "]"
     case t: New => "new " + apply(t.tpe) + "()"

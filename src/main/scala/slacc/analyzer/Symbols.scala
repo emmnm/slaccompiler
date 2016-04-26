@@ -2,6 +2,7 @@ package slacc
 package analyzer
 
 import utils._
+import Types._
 
 object Symbols {
   trait Symbolic[S <: Symbol] {
@@ -18,7 +19,7 @@ object Symbols {
     }
   }
 
-  sealed abstract class Symbol extends Positioned {
+  sealed abstract class Symbol extends Positioned with Typed {
     val id: Int = ID.next
     val name: String
   }
@@ -52,7 +53,7 @@ object Symbols {
           case None => methods get n
         }
 
-    def lookupVar(n: String): Option[VariableSymbol] = 
+    def lookupVar(n: String): Option[VariableSymbol] =
         parent match {
           case Some(p) => if( members contains n) members get n else p.lookupVar(n)
           case None => members get n
@@ -66,7 +67,7 @@ object Symbols {
     var argList: List[VariableSymbol] = Nil
     var overridden: Option[MethodSymbol] = None
 
-    def lookupVar(n: String): Option[VariableSymbol] =  //members -> param -> class.
+    def lookupVar(n: String): Option[VariableSymbol] = //members -> param -> class.
       if(members contains n) members get n
       else if(params contains n) params get n
       else classSymbol.lookupVar(n)

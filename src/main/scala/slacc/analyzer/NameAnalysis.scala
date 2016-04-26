@@ -4,6 +4,7 @@ package analyzer
 import utils._
 import ast.Trees._
 import Symbols._
+import Types._
 
 object NameAnalysis extends Pipeline[Program, Program] {
 
@@ -16,7 +17,6 @@ object NameAnalysis extends Pipeline[Program, Program] {
 
     // Make sure you check all constraints
 
-    // Step 1: Implementation - Do a search into the tree.
     var gs = new GlobalScope;
 
     //-----------------------------------------------------
@@ -28,7 +28,7 @@ object NameAnalysis extends Pipeline[Program, Program] {
       p.classes.foreach( createClassSymbol )
     }
     def createClassSymbol( c : ClassDecl) : Unit = {
-      c.setSymbol(new ClassSymbol(c.id.value).setPos(c) )
+      c.setSymbol(new ClassSymbol(c.id.value).setPos(c))
       c.vars.foreach ( createVarSymbol )
       c.methods.foreach( m => createMethodSymbol(m,c.getSymbol))
     }
@@ -39,18 +39,35 @@ object NameAnalysis extends Pipeline[Program, Program] {
       m.setSymbol(new MethodSymbol(m.id.value,c).setPos(m))
       m.args.foreach( createFormalSymbol )
       m.vars.foreach( createVarSymbol )
-      m.retType match {
+/*      m.retType match {
         case r : Identifier => r.setSymbol(new VariableSymbol(r.value).setPos(r))
-        case _ =>
-      }
+        case _ => //what do here.
+      } */
+//      m.getSymbol.argList = m.args.map( f => f.getSymbol )
     }
     def createFormalSymbol( f : Formal ) {
-      f.setSymbol( new VariableSymbol( f.id.value ).setPos(f) )
+      f.setSymbol( new VariableSymbol( f.id.value ).setPos(f))
     }
 
     //-----------------------------------------------------
     // CREATE SYMBOL TABLES / REDUCE / DETECT DUPLICATES
-    // ALL POTENTIAL SYMBOLS ARE DEFINED SO NONE SHOULD BE EMPTY / NIL.
+    // ALL POTENTIAL SYMBOLS ARE DEFINED SO NONE SHOULD BE EMPTY / NIL.\
+    // HELPER METHODS BELOW FOR THE ANALYIZATION STAGE.
+
+    def analyzeType(tpe : TypeTree) : Type = {
+      tpe match {
+        case tpe: IntType => TInt
+        case tpe: BooleanType => TBoolean
+        case tpe: IntArrayType => TIntArray
+        case tpe: StringType => TString
+        case tpe: UnitType => TUnit
+        case id: Identifier => gs.lookupClass(id.value) match {
+            case Some(c) => c.getType
+            case None => error("Class " + id.value + " not found.",id); TError
+          }
+        case _ => error("Type " + tpe + " not found.",tpe); TError
+      }
+    }
 
     def sort_classes( c1 : ClassDecl, c2 : ClassDecl ) = {
       c1.parent match {
@@ -59,24 +76,29 @@ object NameAnalysis extends Pipeline[Program, Program] {
       }
     }
 
+    //-----------------------------------------------------
+    // CREATE SYMBOL TABLES / REDUCE / DETECT DUPLICATES
+    // ALL POTENTIAL SYMBOLS ARE DEFINED SO NONE SHOULD BE EMPTY / NIL.
+
     def analyzeMainSymbol( p : Program ) : Unit = {
       gs.mainClass = p.main.getSymbol
-      val topological = p.classes.sortWith(sort_classes); //println(topological.map( _.id.value ))
+      val topological = p.classes.sortWith(sort_classes);
       topological.foreach( analyzeClassSymbol )
+      topological.foreach( analyzeClassValues )
       analyzeMethodClassSymbol( p.main.main, p.main.getSymbol )
     }
 
     def analyzeClassSymbol( c : ClassDecl ) : Unit = {
-      //check duplicates.
-      gs.lookupClass(c.id.value) match {
+
+      gs.lookupClass(c.id.value) match { //check duplicates.
         case Some(a) => error("class " + c.id.value + " already defined at " + a.position,c)
-        case None => gs.classes += (c.id.value -> c.getSymbol)
+        case None => c.getSymbol.setType(TObject(c.getSymbol));
+          gs.classes += (c.id.value -> c.getSymbol)
       }
 
       c.id.setSymbol(c.getSymbol) //id tag gets the symbol. 
 
-      //load parent data. if not defined we have cycle. quit.
-      c.getSymbol.parent = 
+      c.getSymbol.parent = //load parent data. if not defined we have cycle. quit.
         c.parent match {
           case Some(par) => {
             gs.lookupClass(par.value) match {
@@ -87,8 +109,10 @@ object NameAnalysis extends Pipeline[Program, Program] {
           }
           case None => None
         }
-      
-      //fill values of class. fill in member fields, then the methods.
+    }
+
+    //fill values of class. fill in member fields, then the methods.
+    def analyzeClassValues( c : ClassDecl ) : Unit = {
       c.vars.foreach( x => analyzeVarClassSymbol(x, c.getSymbol) )
       c.methods.foreach( x => analyzeMethodClassSymbol(x, c.getSymbol) )
     }
@@ -97,11 +121,13 @@ object NameAnalysis extends Pipeline[Program, Program] {
       //will detect errors if defined more than once or member is overloaded.
       c.lookupVar(v.id.value) match {
         case Some(a) => error("var " + v.id.value + " already defined at " + a.position,v)
-        case None => c.members += (v.id.value -> v.getSymbol); v.id.setSymbol(v.getSymbol)
+        case None => v.getSymbol.setType(analyzeType(v.tpe))
+          c.members += (v.id.value -> v.getSymbol); v.id.setSymbol(v.getSymbol)
       }
     }
 
-    def analyzeMethodClassSymbol( m : MethodDecl, c : ClassSymbol ) {
+    // TODO: FORCE OVERRIDING CONSTRAINT ON METHOD. ALSO CHECK FOR ARGLIST.
+    def analyzeMethodClassSymbol( m : MethodDecl, c : ClassSymbol ) { 
 
       //if already defined, check more, else just move ahead.
       c.lookupMethod(m.id.value) match {
@@ -121,6 +147,7 @@ object NameAnalysis extends Pipeline[Program, Program] {
       }
       //link internals to method symbol. Start with arguments.
       m.args.foreach ( x => analyzeFormalMethodSymbol(x,m.getSymbol) )
+      m.getSymbol.argList = m.args.map(x => m.getSymbol.lookupVar(x.id.value) ).flatten
       m.vars.foreach ( x => analyzeVarMethodSymbol(x,m.getSymbol) )
       (m.exprs :+ m.retExpr).foreach ( x => analyzeExprTreeMethod(x,m.getSymbol) )
 
@@ -199,26 +226,7 @@ object NameAnalysis extends Pipeline[Program, Program] {
 
         case _ => //do nothing. Literal.
       }
-
     }
-
-/*
-  case class MethodCall(obj: ExprTree, meth: Identifier, args: List[ExprTree]) extends ExprTree
-
-  case class Identifier(value: String) extends TypeTree with ExprTree with Symbolic[Symbol]
-  case class Self() extends ExprTree with Symbolic[ClassSymbol]
-  case class NewIntArray(size: ExprTree) extends ExprTree
-  case class New(tpe: Identifier) extends ExprTree
-  case class Not(expr: ExprTree) extends ExprTree
-
-  case class Block(exprs: List[ExprTree]) extends ExprTree
-  case class If(expr: ExprTree, thn: ExprTree, els: Option[ExprTree]) extends ExprTree
-  case class While(cond: ExprTree, body: ExprTree) extends ExprTree
-  case class Println(expr: ExprTree) extends ExprTree
-  case class Assign(id: Identifier, expr: ExprTree) extends ExprTree
-  case class ArrayAssign(id: Identifier, index: ExprTree, expr: ExprTree) extends ExprTree
-  case class Strof(expr: ExprTree) extends ExprTree
-*/
 
     createMainSymbol(prog)
     analyzeMainSymbol(prog)
