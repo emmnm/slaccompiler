@@ -8,8 +8,8 @@ class B <: A {
 class A {
   var value: Int;
   method foo(): Int = {
-    var value: Bool;
-    value = false;
+    var value: String;
+    value = 1 + "hi";
     41
   }
 }

@@ -54,19 +54,24 @@ object NameAnalysis extends Pipeline[Program, Program] {
     // ALL POTENTIAL SYMBOLS ARE DEFINED SO NONE SHOULD BE EMPTY / NIL.\
     // HELPER METHODS BELOW FOR THE ANALYIZATION STAGE.
 
-    def analyzeType(tpe : TypeTree) : Type = {
+    //TYPES ARE NON UNIQUE. CREATE AT WILL.
+
+    /* Given a TypeTree, will attach the Type to the type tree, as well as return the Type
+       so that we can attach to the Symbol that it is requested for.
+       prereq: The class symbols are all defined. */
+    def attachType(tpe : TypeTree) : Type = {
       tpe match {
-        case tpe: IntType => TInt
-        case tpe: BooleanType => TBoolean
-        case tpe: IntArrayType => TIntArray
-        case tpe: StringType => TString
-        case tpe: UnitType => TUnit
+        case tpe: IntType => tpe.setType(TInt)
+        case tpe: BooleanType => tpe.setType(TBoolean)
+        case tpe: IntArrayType => tpe.setType(TIntArray)
+        case tpe: StringType => tpe.setType(TString)
+        case tpe: UnitType => tpe.setType(TUnit)
         case id: Identifier => gs.lookupClass(id.value) match {
-            case Some(c) => c.getType
-            case None => error("Class " + id.value + " not found.",id); TError
+            case Some(c) => tpe.setType(c.getType)
+            case None => error("class type " + id.value + " not found.",id); tpe.setType(TError)
           }
-        case _ => error("Type " + tpe + " not found.",tpe); TError
       }
+      tpe.getType
     }
 
     def sort_classes( c1 : ClassDecl, c2 : ClassDecl ) = {
@@ -85,7 +90,7 @@ object NameAnalysis extends Pipeline[Program, Program] {
       val topological = p.classes.sortWith(sort_classes);
       topological.foreach( analyzeClassSymbol )
       topological.foreach( analyzeClassValues )
-      analyzeMethodClassSymbol( p.main.main, p.main.getSymbol )
+      analyzeMethodClassSymbol( p.main.main, p.main.getSymbol ) // TODO: make sure no args + Unit.
     }
 
     def analyzeClassSymbol( c : ClassDecl ) : Unit = {
@@ -121,30 +126,34 @@ object NameAnalysis extends Pipeline[Program, Program] {
       //will detect errors if defined more than once or member is overloaded.
       c.lookupVar(v.id.value) match {
         case Some(a) => error("var " + v.id.value + " already defined at " + a.position,v)
-        case None => v.getSymbol.setType(analyzeType(v.tpe))
+        case None => v.getSymbol.setType(attachType(v.tpe))
           c.members += (v.id.value -> v.getSymbol); v.id.setSymbol(v.getSymbol)
       }
     }
 
     // TODO: FORCE OVERRIDING CONSTRAINT ON METHOD. ALSO CHECK FOR ARGLIST.
     def analyzeMethodClassSymbol( m : MethodDecl, c : ClassSymbol ) { 
-
+      var addToMap = false;
       //if already defined, check more, else just move ahead.
       c.lookupMethod(m.id.value) match {
-        case None => c.methods += (m.id.value -> m.getSymbol); m.id.setSymbol(m.getSymbol)
+        case None => addToMap = true
         case Some(d) => {
           //if the conflict is not in current class, and has same # arguments, accept.
           //otherwise, throw error.
           if(!(c.methods contains m.id.value) && (d.argList.length == m.args.length)) {
             m.getSymbol.overridden = Some(d)
-            c.methods += (m.id.value -> m.getSymbol)
-            m.id.setSymbol(m.getSymbol)
+            addToMap = true
           } else {
             error("method " + m.id.value + " already defined at " + d.position,m)
           }
-
         }
       }
+
+      if(addToMap) {
+        c.methods += (m.id.value -> m.getSymbol); m.id.setSymbol(m.getSymbol);
+        m.getSymbol.setType(attachType(m.retType))
+      }
+
       //link internals to method symbol. Start with arguments.
       m.args.foreach ( x => analyzeFormalMethodSymbol(x,m.getSymbol) )
       m.getSymbol.argList = m.args.map(x => m.getSymbol.lookupVar(x.id.value) ).flatten
@@ -153,25 +162,35 @@ object NameAnalysis extends Pipeline[Program, Program] {
 
     }
     def analyzeFormalMethodSymbol( f : Formal , m : MethodSymbol ) {
+      var addToMap = false
       m.lookupVar(f.id.value) match {
-        case None => m.params += (f.id.value -> f.getSymbol)
+        case None => addToMap = true; //m.params += (f.id.value -> f.getSymbol)
         case Some(a) =>
           m.classSymbol.lookupVar(f.id.value) match {
-            case Some(b) => m.params += (f.id.value -> f.getSymbol); f.id.setSymbol(f.getSymbol)
+            case Some(b) => addToMap = true 
             case None => error("parameter " + f.id.value + " already defined at " + a.position,f)
           }
         }
+      if(addToMap) {
+        m.params += (f.id.value -> f.getSymbol); f.id.setSymbol(f.getSymbol)
+        f.getSymbol.setType(attachType(f.tpe))
+      }
     }
 
     def analyzeVarMethodSymbol( v : VarDecl, m : MethodSymbol ) {
+      var addToMap = false;
       m.lookupVar(v.id.value) match {
-        case None => m.members += (v.id.value -> v.getSymbol)
+        case None => addToMap = true
         case Some(a) =>
           m.classSymbol.lookupVar(v.id.value) match {
-            case Some(b) => m.params += (v.id.value -> v.getSymbol); v.id.setSymbol(v.getSymbol)
+            case Some(b) => addToMap = true
             case None => error("var " + v.id.value + " already defined at " + a.position,v)
           }
         }
+      if(addToMap) {
+        m.params += (v.id.value -> v.getSymbol); v.id.setSymbol(v.getSymbol)
+        v.getSymbol.setType(attachType(v.tpe))
+      }
     }
 
     def analyzeExprTreeMethod( t : ExprTree, m : MethodSymbol ) {

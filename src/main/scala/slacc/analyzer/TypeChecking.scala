@@ -46,10 +46,9 @@ object TypeChecking extends Pipeline[Program, Program] {
             case a : TObject => {
                 a.classSymbol.lookupMethod(expr.meth.value) match {
                   case Some(m) => 
-                    if(m.argList.zip(expr.args).forall  //arglist -> need, expr.args have
-                        {case (c,d) => d.getType.isSubTypeOf(c.getType) })
-                            m.getType
-                    else error("Wrong Argument Types", expr); TError
+                    m.argList.zip(expr.args).foreach {case (c,d) => tcExpr(d,c.getType) }
+                    m.getType
+                    //else error("Wrong Argument Types", expr); TError
                   case None => error("Method not found",expr.obj); TError
                 };
             }
@@ -71,7 +70,7 @@ object TypeChecking extends Pipeline[Program, Program] {
         case expr : Println => tcExpr(expr.expr,TString); TUnit
         case expr : Assign => tcExpr(expr.id); tcExpr(expr.expr,expr.id.getType); TUnit
         case expr : ArrayAssign => tcExpr(expr.index,TInt); tcExpr(expr.id);
-            tcExpr(expr.expr,expr.id.getType); TUnit
+            tcExpr(expr.expr,TInt); TUnit
         case expr : Strof => tcExpr(expr.expr,TInt,TBoolean); TString //can add objects here.
       }
 
@@ -107,6 +106,7 @@ object TypeChecking extends Pipeline[Program, Program] {
     //attach proper method calls (might not be run type accurate).
     
     tcProgram(prog)
+    terminateIfErrors
 
     prog
   }

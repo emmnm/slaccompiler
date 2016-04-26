@@ -40,7 +40,7 @@ object Types {
       case TBoolean => true
       case _ => false
     }
-    override def toString = "TBoolean"
+    override def toString = "Boolean"
   }
 
   case object TIntArray extends Type {
@@ -48,7 +48,7 @@ object Types {
       case TIntArray => true
       case _ => false
     }
-    override def toString = "TInt[]"
+    override def toString = "Int[]"
   }
 
   case object TString extends Type {
@@ -56,7 +56,7 @@ object Types {
       case TString => true
       case _ => false
     }
-    override def toString = "TString"
+    override def toString = "String"
   }
 
   case object TUnit extends Type {
@@ -64,7 +64,7 @@ object Types {
       case TUnit => true
       case _ => false
     }
-    override def toString = "TUnit"
+    override def toString = "Unit"
   }
 
   case class TObject(classSymbol: ClassSymbol) extends Type {
