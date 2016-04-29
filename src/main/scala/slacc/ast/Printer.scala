@@ -49,9 +49,9 @@ object Printer {
     case t: ArrayLength => apply(t.arr) + ".length"
 
 
-    case t: MethodCall => apply(t.obj) + "." + t.meth.value + (if(doSymbols) "#??" else "") + "(" + t.args.map(apply).mkString(",") + ")"
+//    case t: MethodCall => apply(t.obj) + "." + t.meth.value + (if(doSymbols) "#??" else "") + "(" + t.args.map(apply).mkString(",") + ")"
 
-/*    case t: MethodCall => apply(t.obj) + "." + apply(t.meth) + "(" + t.args.map(apply).mkString(",") + ")" */
+    case t: MethodCall => apply(t.obj) + "." + apply(t.meth) + "(" + t.args.map(apply).mkString(",") + ")" 
     case t: IntLit => t.value.toString
     case t: StringLit => "\"" + t.value + "\""
     

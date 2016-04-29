@@ -1,0 +1,10 @@
+class Main {
+  method foo(): Int = {
+    value = 42;
+    value
+  }
+}
+
+method main(): Unit = {
+  println(new B().foo())
+}

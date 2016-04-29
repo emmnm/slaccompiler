@@ -1,0 +1,14 @@
+class A {
+}
+
+class B {
+
+  method jass( i : A ) : Int = {
+    42
+  }
+
+}
+
+method main(): Unit = {
+  println("hi")
+}

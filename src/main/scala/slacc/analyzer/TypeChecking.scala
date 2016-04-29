@@ -9,6 +9,8 @@ import utils._
 
 object TypeChecking extends Pipeline[Program, Program] {
 
+  //TODO: Make sure main method has no args and has Unit return type.!
+
   /** Typechecking does not produce a value, but has the side effect of
    * attaching types to trees and potentially outputting error messages. */
   def run(ctx: Context)(prog: Program): Program = {
@@ -35,24 +37,25 @@ object TypeChecking extends Pipeline[Program, Program] {
             tcExpr(expr.lhs,  TInt,TBoolean,TString,TIntArray,anyObject);
             tcExpr(expr.rhs,  TInt,TBoolean,TString,TIntArray,anyObject);
             (expr.lhs.getType,expr.rhs.getType) match {
-              case (TObject(_),TObject(_)) => TBoolean // can be different objects.
+              case (TObject(_),TObject(_)) => TBoolean
               case (a,b) => if( a == b ) TBoolean else TError
             }
         case expr : ArrayRead => tcExpr(expr.arr,TIntArray); tcExpr(expr.index,TInt); TInt
         case expr : ArrayLength => tcExpr(expr.arr,TIntArray); TInt;
 
-        //TODO: Finish this.
+        //TODO: Finish this. ATTACH PROPER SYMBOL TO THE ID TAG FOR THE PRINTER.
         case expr : MethodCall => tcExpr(expr.obj,anyObject) match { //obj,meth,args
             case a : TObject => {
                 a.classSymbol.lookupMethod(expr.meth.value) match {
                   case Some(m) => 
                     m.argList.zip(expr.args).foreach {case (c,d) => tcExpr(d,c.getType) }
+                    expr.meth.setSymbol(m)
                     m.getType
                     //else error("Wrong Argument Types", expr); TError
-                  case None => error("Method not found",expr.obj); TError
+                  case None => error("method not found",expr.obj); TError
                 };
             }
-            case _ => error("Variable not an object!",expr); TError
+            case _ => error("variable not an object!",expr); TError
         }
         case expr : IntLit => TInt
         case expr : StringLit => TString
@@ -71,7 +74,7 @@ object TypeChecking extends Pipeline[Program, Program] {
         case expr : Assign => tcExpr(expr.id); tcExpr(expr.expr,expr.id.getType); TUnit
         case expr : ArrayAssign => tcExpr(expr.index,TInt); tcExpr(expr.id);
             tcExpr(expr.expr,TInt); TUnit
-        case expr : Strof => tcExpr(expr.expr,TInt,TBoolean); TString //can add objects here.
+        case expr : Strof => tcExpr(expr.expr,TInt,TBoolean); TString //can add objects here?
       }
 
       expr.setType(tpe)
@@ -89,7 +92,12 @@ object TypeChecking extends Pipeline[Program, Program] {
 
     def tcProgram(prog: Program): Unit = {
       prog.classes.foreach( c => tcClass(c) )
-      tcMethod(prog.main.main)
+      tcMainMethod(prog.main)
+    }
+
+    def tcMainMethod(mthd : MainMethod) {
+      mthd.main.exprs.foreach( x => tcExpr(x) )
+      tcExpr(mthd.main.retExpr,TUnit)
     }
 
     def tcClass(clss: ClassDecl) : Unit = {

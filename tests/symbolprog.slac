@@ -1,19 +1,27 @@
+class C {
+  var j : Int;
+}
+
 class B <: A {
-  method foo(): Int = {
+  method foo(j : A, zztop: Int): A = {
     value = 42;
-    value
+    new A()
   }
 }
 
 class A {
   var value: Int;
-  method foo(): Int = {
+  method foo(j: A, jamesbrown: Int): A = {
     var value: String;
     value = 1 + "hi";
+    41;
+    new A()
+  }
+  method pirhanna(): Int = {
     41
   }
 }
 
 method main(): Unit = {
-  println(new B().foo())
+  println(strOf(new B().foo().pirhanna()))
 }
