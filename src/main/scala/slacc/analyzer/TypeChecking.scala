@@ -17,6 +17,9 @@ object TypeChecking extends Pipeline[Program, Program] {
     import ctx.reporter._
 
     def tcExpr(expr: ExprTree, expected: Type*): Type = {
+
+      var err_str = "";
+
       val tpe: Type = expr match { // TODO: Compute type for each kind of expression
 
         case expr : And => tcExpr(expr.lhs,TBoolean); tcExpr(expr.rhs,TBoolean); TBoolean
@@ -27,7 +30,7 @@ object TypeChecking extends Pipeline[Program, Program] {
               case (TString,TInt) => TString
               case (TInt,TString) => TString
               case (TString,TString) => TString
-              case (_,_) => TError
+              case (_,_) => error("Plus Operator Invalid Overload", expr); TError
             }
         case expr : Minus => tcExpr(expr.lhs,TInt); tcExpr(expr.rhs,TInt); TInt
         case expr : Times => tcExpr(expr.lhs,TInt); tcExpr(expr.rhs,TInt); TInt
@@ -37,8 +40,8 @@ object TypeChecking extends Pipeline[Program, Program] {
             tcExpr(expr.lhs,  TInt,TBoolean,TString,TIntArray,anyObject);
             tcExpr(expr.rhs,  TInt,TBoolean,TString,TIntArray,anyObject);
             (expr.lhs.getType,expr.rhs.getType) match {
-              case (TObject(_),TObject(_)) => TBoolean
-              case (a,b) => if( a == b ) TBoolean else TError
+              case (TObject(x),TObject(y)) => TBoolean
+              case (a,b) => if( a == b ) TBoolean else { error("Invalid Comparison", expr); TError }
             }
         case expr : ArrayRead => tcExpr(expr.arr,TIntArray); tcExpr(expr.index,TInt); TInt
         case expr : ArrayLength => tcExpr(expr.arr,TIntArray); TInt;
@@ -49,9 +52,8 @@ object TypeChecking extends Pipeline[Program, Program] {
                 a.classSymbol.lookupMethod(expr.meth.value) match {
                   case Some(m) => 
                     m.argList.zip(expr.args).foreach {case (c,d) => tcExpr(d,c.getType) }
-                    expr.meth.setSymbol(m)
+                    expr.meth.setSymbol(m);
                     m.getType
-                    //else error("Wrong Argument Types", expr); TError
                   case None => error("method not found",expr.obj); TError
                 };
             }
@@ -63,15 +65,16 @@ object TypeChecking extends Pipeline[Program, Program] {
         case expr : False => TBoolean
         case expr : Identifier => expr.getType
         case expr : Self  => expr.getSymbol.getType
-        case expr : NewIntArray => TIntArray
-        case expr : New => tcExpr(expr.tpe)
+        case expr : NewIntArray => tcExpr(expr.size,TInt); TIntArray
+        case expr : New => tcExpr(expr.tpe,anyObject)
         case expr : Not => tcExpr(expr.expr,TBoolean); TBoolean
-        case expr : Block => expr.exprs.foreach( x => tcExpr(x) ); TUnit
-        case expr : If => tcExpr(expr.expr,TBoolean); tcExpr(expr.thn,TUnit);
-            expr.els match { case Some(e) => tcExpr(e,TUnit); case None => }; TUnit;
+        case expr : Block => expr.exprs.foreach( x => tcExpr(x) ); tcExpr(expr.exprs.last)
+        case expr : If => { tcExpr(expr.expr,TBoolean); val t = tcExpr(expr.thn);
+            expr.els match { case Some(e) => tcExpr(e,t); t case None => TUnit}
+        }
         case expr : While => tcExpr(expr.cond,TBoolean); tcExpr(expr.body,TUnit); TUnit;
         case expr : Println => tcExpr(expr.expr,TString); TUnit
-        case expr : Assign => tcExpr(expr.id); tcExpr(expr.expr,expr.id.getType); TUnit
+        case expr : Assign => val t = tcExpr(expr.id); tcExpr(expr.expr,t); TUnit
         case expr : ArrayAssign => tcExpr(expr.index,TInt); tcExpr(expr.id);
             tcExpr(expr.expr,TInt); TUnit
         case expr : Strof => tcExpr(expr.expr,TInt,TBoolean); TString //can add objects here?

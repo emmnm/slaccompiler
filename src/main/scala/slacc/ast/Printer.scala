@@ -55,7 +55,6 @@ object Printer {
     case t: IntLit => t.value.toString
     case t: StringLit => "\"" + t.value + "\""
     
-
     case t: True => "true" 
     case t: False => "false" 
     case t: Identifier => t.value + (if(doSymbols) { "#" + t.getSymbol.id } else "")
@@ -72,7 +71,6 @@ object Printer {
     case t: Assign => apply(t.id) + " = " + apply(t.expr) 
     case t: ArrayAssign => apply(t.id) + "[" + apply(t.index) + "]=" + apply(t.expr) 
     case t: Strof => "strOf(" + apply(t.expr) + ")"
-
     }
   }
 
