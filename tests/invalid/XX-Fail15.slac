@@ -1,7 +1,0 @@
-class A {
-    method foo(a : Int, ) : retType = {
-        12
-    }
-}
-
-method main() : Unit = { println("42") }

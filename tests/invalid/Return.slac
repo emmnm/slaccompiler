@@ -1,0 +1,18 @@
+class C {
+  var f: Int;
+  method m(x: Int): Unit = {
+    f = x;
+    // Error: Type error: Expected: Unit, found: Int
+    f
+  }
+  method getF(): Int = {
+    f
+  }
+}
+
+method main(): Unit = {
+  var c: C;
+  c = new C();
+  c.m(5);
+  println(strOf(c.getF()))
+}

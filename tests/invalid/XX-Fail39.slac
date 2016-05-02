@@ -1,8 +1,0 @@
-class Calls {
-    method calls() : Int = {
-        p = k.call(a b);
-        1
-    }
-}
-
-method main() : Unit = { println("42") }

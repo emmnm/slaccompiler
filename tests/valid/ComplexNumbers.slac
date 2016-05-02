@@ -6,7 +6,7 @@ class ComplexNumber {
     re = re_;
     im = im_;
 
-    this
+    self
   }
 
   method inverse () : ComplexNumber = {
@@ -30,8 +30,8 @@ class ComplexNumber {
   }
 
   method print () : String = {
-    println(re);
-    println(im);
+    println(strOf(re));
+    println(strOf(im));
     
     ""
   }

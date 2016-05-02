@@ -1,5 +1,0 @@
-class A {
-    String string s; 
-}
-
-method main() : Unit = { println("42") }

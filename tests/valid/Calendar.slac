@@ -6,12 +6,12 @@ class CalendarImpl {
     method init(month : Int, year : Int) : CalendarImpl = {
         month_ = month;
         year_ = year;
-        this
+        self
     }
 
     method isLeap(year : Int) : Bool = {
-        if (this.mod(year, 100) == 0) this.mod(year, 400) == 0
-        else this.mod(year, 4) == 0
+        if (self.mod(year, 100) == 0) self.mod(year, 400) == 0
+        else self.mod(year, 4) == 0
     }
     
 
@@ -22,7 +22,7 @@ class CalendarImpl {
             month == 8 || month == 10 || month == 12) result = 31
         else result = 30;
         if (month == 2) {
-            if (this.isLeap(year)) result = 29
+            if (self.isLeap(year)) result = 29
             else result = 28
         };
         result
@@ -35,7 +35,7 @@ class CalendarImpl {
 
         pyear = year - 1;
         result = 365 * pyear + pyear / 4 - pyear / 100 + pyear / 400;
-        result = this.mod(result, 7);
+        result = self.mod(result, 7);
         result
     }
 
@@ -43,13 +43,13 @@ class CalendarImpl {
         var result : Int;
         var i : Int;
 
-        result = this.firstJan(year);
+        result = self.firstJan(year);
         i = 1;
         while (i < month) {
-            result = result + this.daysInMonth(i, year);
+            result = result + self.daysInMonth(i, year);
             i = i + 1
         };
-        result = this.mod(result, 7);
+        result = self.mod(result, 7);
         result
     }
 
@@ -59,15 +59,15 @@ class CalendarImpl {
         var firstDay : Int;
         var count : Int;
 
-        days = this.daysInMonth(month_, year_);
-        firstDay = this.firstDay(month_, year_);
+        days = self.daysInMonth(month_, year_);
+        firstDay = self.firstDay(month_, year_);
         
         println("Mo Tu We Th Fr Sa Su");
-        println(this.displayWeek(1, 7 - firstDay));
+        println(self.displayWeek(1, 7 - firstDay));
         count = 7 - firstDay;
         while (count < days) {
-            if (days < count + 7) println(this.displayWeek(count + 1, days))
-            else println(this.displayWeek(count + 1, count + 7));
+            if (days < count + 7) println(self.displayWeek(count + 1, days))
+            else println(self.displayWeek(count + 1, count + 7));
             count = count + 7
         };
         ""

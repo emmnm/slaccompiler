@@ -60,7 +60,7 @@ class primeTest {
     j = 0 ;
     while (j < n) {
       println("Is "+tab[j]+" prime ?");
-      println(self.test(tab[j]));
+      println(strOf(self.test(tab[j])));
       j = j + 1
     };
 
@@ -72,5 +72,5 @@ class primeTest {
 }
 
 method main() : Unit = {
-  println(new primeTest().init())
+  println(strOf(new primeTest().init()))
 }

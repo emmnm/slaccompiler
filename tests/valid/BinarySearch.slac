@@ -11,41 +11,41 @@ class BS {
         var aux01 : Int;
         var aux02 : Int;
 
-        aux01 = this.Init(sz);
-        aux02 = this.Print();
+        aux01 = self.Init(sz);
+        aux02 = self.Print();
 
-        if (this.Search(8))
-            println(1)
+        if (self.Search(8))
+            println("1")
         else
-            println(0);
-        if (this.Search(19))
-            println(1)
+            println("0");
+        if (self.Search(19))
+            println("1")
         else
-            println(0);
-        if (this.Search(20))
-            println(1)
+            println("0");
+        if (self.Search(20))
+            println("1")
         else
-            println(0);
-        if (this.Search(21))
-            println(1)
+            println("0");
+        if (self.Search(21))
+            println("1")
         else
-            println(0);
-        if (this.Search(37))
-            println(1)
+            println("0");
+        if (self.Search(37))
+            println("1")
         else
-            println(0);
-        if (this.Search(38))
-            println(1)
+            println("0");
+        if (self.Search(38))
+            println("1")
         else
-            println(0);
-        if (this.Search(39))
-            println(1)
+            println("0");
+        if (self.Search(39))
+            println("1")
         else
-            println(0);
-        if (this.Search(50))
-            println(1)
+            println("0");
+        if (self.Search(50))
+            println("1")
         else
-            println(0);
+            println("0");
 
         999
     }
@@ -99,10 +99,10 @@ class BS {
 
         j = 1 ;
         while (j < (size)) {
-            println(number[j]);
+            println(strOf(number[j]));
             j = j + 1
         };
-        println(99999);
+        println("99999");
         0
     }
 
@@ -131,5 +131,5 @@ class BS {
 }
 
 method main(): Unit = {
-    println(new BS().Start(20))
+    println(strOf(new BS().Start(20)))
 }

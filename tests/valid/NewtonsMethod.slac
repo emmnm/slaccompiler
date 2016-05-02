@@ -9,7 +9,7 @@ class NM {
 		guess = new Real().init(1,4);
 		orig = new Real().init(n,4);
 
-		result = this.sqrtIter(guess, 0, 5, orig);
+		result = self.sqrtIter(guess, 0, 5, orig);
 		result
 	}
 
@@ -34,7 +34,7 @@ class NM {
 			average = guess.plus(quotient).divide(new Real().init(2,4));
 
 			// Now recurse
-			result = this.sqrtIter(average, i+1, maxIter, original)
+			result = self.sqrtIter(average, i+1, maxIter, original)
 		};
 		result
 	}
@@ -61,7 +61,7 @@ class Real {
             digits[i] = 0;
             i = i + 1
         };
-        this
+        self
     }
 
     method getDigits() : Int[] = {
@@ -74,7 +74,7 @@ class Real {
 
     method setIntegerPart(p : Int) : Real = {
         integerPart = p;
-        this
+        self
     }
 
 	// Divides one real with another
@@ -93,9 +93,9 @@ class Real {
 			len = other.getDigits().length
 		};
 
-		//println("Dividing " + this.toString() + " with " + other.toString());
+		//println("Dividing " + self.toString() + " with " + other.toString());
 
-		int1 = this.getIntegerPart();
+		int1 = self.getIntegerPart();
 		int2 = other.getIntegerPart();
 		// Create integer versions of both numbers 
 		i = 0;	
@@ -136,7 +136,7 @@ class Real {
             leftover = util.mod(leftover, den);
             i = i + 1
         };
-        this
+        self
     }
 
     // note that this only works for positive reals
@@ -201,7 +201,7 @@ class Frac {
         numerator = util.abs(n);
         denominator = util.abs(d);
         sign = (n < 0 && d < 0 || (0 < n || n == 0) && (0 < d || d == 0)); 
-        this.simplify()
+        self.simplify()
     }
 
     method getNumerator() : Int = {
@@ -214,7 +214,7 @@ class Frac {
 
     method setPos(positive : Bool) : Frac = {
         sign = positive;
-        this
+        self
     }
 
     method isPos() : Bool = {
@@ -233,7 +233,7 @@ class Frac {
             }
         };
 
-        this
+        self
     }
 
     method plus(other : Frac) : Frac = {
@@ -258,15 +258,15 @@ class Frac {
     }
 
     method minus(other : Frac) : Frac = {
-        this.plus(other.negative())
+        self.plus(other.negative())
     }
 
     method times(other : Frac) : Frac = {
-        (new Frac()).init(numerator * other.getNumerator(), denominator * other.getDenominator()).simplify().setPos(this.isPos() && other.isPos() || !this.isPos() && !other.isPos())
+        (new Frac()).init(numerator * other.getNumerator(), denominator * other.getDenominator()).simplify().setPos(self.isPos() && other.isPos() || !self.isPos() && !other.isPos())
     }
 
     method divided(other : Frac) : Frac = {
-        this.times(other.inverse())
+        self.times(other.inverse())
     }
 
     method inverse() : Frac = {
@@ -308,8 +308,8 @@ class Util {
         var m : Int;
         var n : Int;
 
-        m = this.abs(m_);
-        n = this.abs(n_);
+        m = self.abs(m_);
+        n = self.abs(n_);
 
         if (m < n) {
             t = m;
@@ -317,18 +317,18 @@ class Util {
             n = t
         };
 
-        r = this.mod(m,n); // m % n;
+        r = self.mod(m,n); // m % n;
 
         if (r == 0) {
             result = n
         } else {
-            result = this.gcd(n, r)
+            result = self.gcd(n, r)
         };
         result
     }
 
     method lcm(m : Int, n : Int) : Int = {
-        (n*m) / this.gcd(n,m)
+        (n*m) / self.gcd(n,m)
     }
 
     method mod(m : Int, n : Int) : Int = {

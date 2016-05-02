@@ -1,0 +1,4 @@
+method main(): Unit = {
+  // Error: Type error: Expected: String, found: Bool
+  println(true)
+}

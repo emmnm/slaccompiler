@@ -1,0 +1,7 @@
+class C {
+}
+
+method main(): Unit = {
+  // Error: Incompatible types in equality: C, Int
+  println(strOf((new C()) == 20))
+}

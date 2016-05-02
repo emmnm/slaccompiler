@@ -23,7 +23,7 @@ class Drawable {
 		
 		while(y < resY) {
 			while(x < resX) {
-				depth = this.computePixel(x, y);
+				depth = self.computePixel(x, y);
 				
 				if(depth < 1) {symb = " "};
 				if(depth == 1) {symb = "."};
@@ -45,7 +45,7 @@ class Drawable {
 		};
 		
 		println("");
-		println(this.getDesc());
+		println(self.getDesc());
 		println("Resolution: " + resX+" by "+resY+" characters.");
 		println("");println("");println("");
 		""

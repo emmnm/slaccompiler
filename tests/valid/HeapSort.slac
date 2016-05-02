@@ -10,14 +10,14 @@ class HS {
 	var foo : Int; // Used to call method without useful return
 
 	method start() : String = {
-		foo = this.print();
-		foo = this.createHeap();
-		foo = this.print();
+		foo = self.print();
+		foo = self.createHeap();
+		foo = self.print();
 		while(1 < size){
 			size = size - 1;
-			foo = this.exchange(0, size);
-			foo = this.siftDown(0);
-			foo = this.print()
+			foo = self.exchange(0, size);
+			foo = self.siftDown(0);
+			foo = self.print()
 		};
 		"Sorting using HeapSort algorithm completed"
 	}
@@ -35,14 +35,14 @@ class HS {
 		array[6] = 2;
 		array[7] = 1;
 		array[8] = 3;
-		this
+		self
 	}
 
 	method createHeap() : Int = {
 		var k : Int;
 		k = size / 2 - 1;
 		while(0-1 < k){
-			foo = this.siftDown(k);
+			foo = self.siftDown(k);
 			k = k - 1
 		};
 		0
@@ -63,7 +63,7 @@ class HS {
 			if(array[desc] - 1 < array[k]) { // k have heap property
 				desc = size // == return
 			}else{
-				foo = this.exchange(k, desc);
+				foo = self.exchange(k, desc);
 				k = desc;
 				desc = 2 * k + 1
 			}

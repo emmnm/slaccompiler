@@ -11,7 +11,7 @@ class QS {
         var aux01 : Int;
         aux01 = self.Init(sz);
         aux01 = self.Print();
-        println(9999);
+        println("9999");
         aux01 = size - 1 ;
         aux01 = self.Sort(0,aux01);
         aux01 = self.Print();
@@ -74,7 +74,7 @@ class QS {
 
         j = 0 ;
         while (j < (size)) {
-            println(number[j]);
+            println(strOf(number[j]));
             j = j + 1
         };
         0
@@ -101,5 +101,5 @@ class QS {
 }
 
 method main() : Unit = {
-    println(new QS().Start(10))
+    println(strOf(new QS().Start(10)))
 }

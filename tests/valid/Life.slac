@@ -15,7 +15,7 @@ class Matrix {
   method init(n : Int, m : Int) : Matrix = {
     // inits the matrix, but elements will be undefined
     cols = m; elements = new Int[n*m];
-    this
+    self
   }
 
   method unfold(i : Int, j : Int) : Int = {
@@ -25,12 +25,12 @@ class Matrix {
 
   method index(i : Int, j : Int) : Int = {
     // returns the element in row i column j
-    elements[this.unfold(i,j)]
+    elements[self.unfold(i,j)]
   }
 
   method assign(i : Int, j : Int, x : Int) : Int = {
     // sets a new value for element at index (i,j)
-    elements[this.unfold(i,j)] = x;
+    elements[self.unfold(i,j)] = x;
     x
   }
 }
@@ -57,14 +57,14 @@ class Board {
     i = 1; j = 1;
     while (i < rows || i == rows) {
       while (j < cols || j == cols) {
-	bitbucket = this.kill(i,j);
+	bitbucket = self.kill(i,j);
 	j = j + 1
       };
       i = i + 1;
       j = 1
     };
 
-    this
+    self
   }
 
   method alive(i : Int, j : Int) : Bool = {
@@ -80,72 +80,72 @@ class Board {
 
   method vmodulo(n : Int) : Int = {
     // modulo operator for rows
-    this.modulo(n, rows)
+    self.modulo(n, rows)
   }
 
   method hmodulo(n : Int) : Int = {
     // modulo operator for cols
-    this.modulo(n, cols)
+    self.modulo(n, cols)
   }
 
   method n_neighbour(i : Int, j : Int) : Int = {
     // 1 if northern neighbour is alive, 0 otherwise
-    cells.index(this.vmodulo(i-1),
-		this.hmodulo(j))
+    cells.index(self.vmodulo(i-1),
+		self.hmodulo(j))
   }
 
   method ne_neighbour(i : Int, j : Int) : Int = {
     // 1 if northeast neighbour is alive, 0 otherwise
-    cells.index(this.vmodulo(i-1),
-		this.hmodulo(j+1))
+    cells.index(self.vmodulo(i-1),
+		self.hmodulo(j+1))
   }
 
   method nw_neighbour(i : Int, j : Int) : Int = {
     // 1 if northwest neighbour is alive, 0 otherwise
-    cells.index(this.vmodulo(i-1),
-		this.hmodulo(j-1))
+    cells.index(self.vmodulo(i-1),
+		self.hmodulo(j-1))
   }
 
   method e_neighbour(i : Int, j : Int) : Int = {
     // 1 if east neighbour is alive, 0 otherwise
-    cells.index(this.vmodulo(i),
-		this.hmodulo(j-1))
+    cells.index(self.vmodulo(i),
+		self.hmodulo(j-1))
   }
 
   method w_neighbour(i : Int, j : Int) : Int = {
     // 1 if west neighbour is alive, 0 otherwise
-    cells.index(this.vmodulo(i),
-		this.hmodulo(j+1))
+    cells.index(self.vmodulo(i),
+		self.hmodulo(j+1))
   }
 
   method s_neighbour(i : Int, j : Int) : Int = {
     // 1 if south neighbour is alive, 0 otherwise
-    cells.index(this.vmodulo(i+1),
-		this.hmodulo(j))
+    cells.index(self.vmodulo(i+1),
+		self.hmodulo(j))
   }
 
   method se_neighbour(i : Int, j : Int) : Int = {
     // 1 if southeast neighbour is alive, 0 otherwise
-    cells.index(this.vmodulo(i+1),
-		this.hmodulo(j+1))
+    cells.index(self.vmodulo(i+1),
+		self.hmodulo(j+1))
   }
 
   method sw_neighbour(i : Int, j : Int) : Int = {
     // 1 if southwest neighbour is alive, 0 otherwise
-    cells.index(this.vmodulo(i+1),
-		this.hmodulo(j-1))
+    cells.index(self.vmodulo(i+1),
+		self.hmodulo(j-1))
   }
 
   method neighbours(i : Int, j : Int) : Int = {
     // number of alive neighbours of cell at (i,j)
-    this.nw_neighbour(i,j)
-      + this.n_neighbour(i,j)
-      + this.ne_neighbour(i,j)
-      + this.e_neighbour(i,j)
-      + this.w_neighbour(i,j)
-      + this.sw_neighbour(i,j)
-      + this.s_neighbour(i,j)
-      + this.se_neighbour(i,j)
+    self.nw_neighbour(i,j)
+      + self.n_neighbour(i,j)
+      + self.ne_neighbour(i,j)
+      + self.e_neighbour(i,j)
+      + self.w_neighbour(i,j)
+      + self.sw_neighbour(i,j)
+      + self.s_neighbour(i,j)
+      + self.se_neighbour(i,j)
   }
 
   method kill(i : Int, j : Int) : Int = {
@@ -181,7 +181,7 @@ class Game {
     bitbucket = board.birth(3,2);
     bitbucket = board.birth(3,3);
 
-    this
+    self
   }
 
   method iterate() : Int = {
@@ -280,9 +280,9 @@ class Game {
     while (i < n) {
       /* Uncomment following line if you think your terminal can handle it. */
       // println("[2J[H");		// clear screen
-      println(this.print());		// print current game
-      bitbucket = this.wait();		// wait, otherwise too fast
-      bitbucket = this.iterate();	// perform iteration
+      println(self.print());		// print current game
+      bitbucket = self.wait();		// wait, otherwise too fast
+      bitbucket = self.iterate();	// perform iteration
       i = i + 1
     };
     ""

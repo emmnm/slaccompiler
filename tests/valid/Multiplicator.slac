@@ -13,10 +13,10 @@ class PaperMulti{
     
     result = factor1 * factor2;
     
-    factorArray1 = this.separateFactor(factor1);
-    factorArray2 = this.separateFactor(factor2);
+    factorArray1 = self.separateFactor(factor1);
+    factorArray2 = self.separateFactor(factor2);
     
-    maxLength = this.getNumberOfDigits(result);
+    maxLength = self.getNumberOfDigits(result);
     i = 0;
     translate = 1;
     sum = 0;
@@ -24,9 +24,9 @@ class PaperMulti{
     println("Multiplication by hand");
     println("**********************");
     
-    aux = this.printNumber(maxLength,factor1," ");
-    aux = this.printNumber(maxLength,factor2,"*");
-    aux = this.printLine(maxLength);
+    aux = self.printNumber(maxLength,factor1," ");
+    aux = self.printNumber(maxLength,factor2,"*");
+    aux = self.printLine(maxLength);
     
     while (i < (factorArray2.length)){
       tempResult = 0;
@@ -36,11 +36,11 @@ class PaperMulti{
       if (i == 0) initString = " "
       else initString = "+";
       
-      aux = this.printNumber(maxLength,tempResult,initString);
+      aux = self.printNumber(maxLength,tempResult,initString);
       i = i + 1;
       translate = translate*10
     };
-    aux = this.printLine(maxLength);
+    aux = self.printLine(maxLength);
     println(" " + sum);
     println("**********************");
     
@@ -52,7 +52,7 @@ class PaperMulti{
     var numberLength : Int;
     
     i = 0;
-    numberLength = this.getNumberOfDigits(number);
+    numberLength = self.getNumberOfDigits(number);
     
     lineToPrint = initString;
     
@@ -99,9 +99,9 @@ class PaperMulti{
     var counter: Int;
     
     counter = 0;
-    factorParts = new Int[this.getNumberOfDigits(factor)];
+    factorParts = new Int[self.getNumberOfDigits(factor)];
     while ( 9 < factor){
-      rest = this.remainder(factor,10);
+      rest = self.remainder(factor,10);
       factor = (factor - rest)/10;
       factorParts[counter] = rest;
       counter = counter + 1
@@ -113,14 +113,14 @@ class PaperMulti{
   }
   
   method getNumberOfDigits(number: Int) : Int = {
-    this.countDigits(number,10,1)
+    self.countDigits(number,10,1)
   }
   
   method countDigits(number: Int, value: Int, counter: Int) : Int = {
     if (number < value)
       counter
     else
-      this.countDigits(number,10*value,counter+1)
+      self.countDigits(number,10*value,counter+1)
   }  
 }
 

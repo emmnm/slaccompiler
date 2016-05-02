@@ -9,5 +9,5 @@ class Fact {
     }
 }
 method main() : Unit = {
-    println(new Fact().computeFactorial(10))
+    println(strOf(new Fact().computeFactorial(10)))
 }

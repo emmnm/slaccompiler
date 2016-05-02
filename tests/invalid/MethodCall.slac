@@ -1,0 +1,26 @@
+class D {
+  var data: String;
+  method getData(): String = {
+    data
+  }
+}
+
+class C {
+  var f: Int;
+  method m(x: Int, d: D): String = {
+    f = x;
+    d.getData()
+  }
+  method getF(): Int = {
+    f
+  }
+}
+
+method main(): Unit = {
+  var c: C;
+  var d: D;
+  d = new D();
+  c = new C();
+  // Error: Type error: Expected: D, found: C
+  println(c.m(5, new C()))
+}
