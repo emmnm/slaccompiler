@@ -6,6 +6,7 @@ import java.io.File
 import lexer._
 import ast._
 import analyzer._
+import code._
 
 object Main {
 
@@ -94,7 +95,8 @@ object Main {
       Printer.doSymbols = true
       println(Printer(ast))
     } else {
-      ???
+      val pipeline = Lexer andThen Parser andThen NameAnalysis andThen TypeChecking andThen CodeGeneration
+      pipeline.run(ctx)(ctx.files.head)
     }
   }
 }

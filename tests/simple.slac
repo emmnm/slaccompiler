@@ -2,13 +2,13 @@ class A {
 }
 
 class B {
-
-  method jass( i : A ) : Int = {
-    42
+  var i : Int;
+  method setI(a : Int): Unit = {
+    i = a
   }
-
 }
 
 method main(): Unit = {
-  println("hi")
+  var iz : Bool;
+  iz = 2 == 3
 }
