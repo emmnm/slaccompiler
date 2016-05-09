@@ -20,7 +20,7 @@ object TypeChecking extends Pipeline[Program, Program] {
 
       var err_str = "";
 
-      val tpe: Type = expr match { // TODO: Compute type for each kind of expression
+      val tpe: Type = expr match {
 
         case expr : And => tcExpr(expr.lhs,TBoolean); tcExpr(expr.rhs,TBoolean); TBoolean
         case expr : Or => tcExpr(expr.lhs,TBoolean); tcExpr(expr.rhs,TBoolean); TBoolean
@@ -51,9 +51,13 @@ object TypeChecking extends Pipeline[Program, Program] {
             case a : TObject => {
                 a.classSymbol.lookupMethod(expr.meth.value) match {
                   case Some(m) => 
-                    m.argList.zip(expr.args).foreach {case (c,d) => tcExpr(d,c.getType) }
-                    expr.meth.setSymbol(m);
-                    m.getType
+                    if(m.argList.length != expr.args.length)
+                      { error("wrong number of arguments",expr); TError }
+                    else {
+                      m.argList.zip(expr.args).foreach {case (c,d) => tcExpr(d,c.getType) }
+                      expr.meth.setSymbol(m);
+                      m.getType
+                    }
                   case None => error("method not found",expr.obj); TError
                 };
             }

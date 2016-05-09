@@ -18,6 +18,7 @@ object NameAnalysis extends Pipeline[Program, Program] {
     // Make sure you check all constraints
 
     var gs = new GlobalScope;
+    var usedSet = Set[VariableSymbol]();
 
     //-----------------------------------------------------
     // CREATE ALL POTENTIAL SYMBOLS (MIGHT BE DUPLICATED)
@@ -154,8 +155,13 @@ object NameAnalysis extends Pipeline[Program, Program] {
       if(addToMap) {
         c.methods += (m.id.value -> m.getSymbol); m.id.setSymbol(m.getSymbol);
       }
-
+      //locals + args.
+//      usedSet = (m.args.map(x => x.getSymbol) ++ m.vars.map( x => x.getSymbol)).toSet
+      usedSet = m.vars.map( x => x.getSymbol).toSet
       (m.exprs :+ m.retExpr).foreach ( x => analyzeExprTreeMethod(x,m.getSymbol) )
+      usedSet.foreach( x => {
+        warning("local variable or argument " + x.name + " not used in method ",x)
+      });
     }
 
     def analyzeMainMethodClassSymbol( m : MethodDecl, c : ClassSymbol ) { 
@@ -215,7 +221,7 @@ object NameAnalysis extends Pipeline[Program, Program] {
 
       t match {
         case id : Identifier => m.lookupVar(id.value) match {
-          case Some(sym) => id.setSymbol(sym)
+          case Some(sym) => id.setSymbol(sym); usedSet -= sym
           case None => error(id.value + " not declared.", t)
         }
         case s  : Self => s.setSymbol(m.classSymbol)
@@ -226,11 +232,10 @@ object NameAnalysis extends Pipeline[Program, Program] {
         }
 
         case e : MethodCall => analyzeExprTreeMethod(e.obj,m);
-          //analyzeExprTreeMethod(e.meth,m); //what does this do? THIS STAYS UNRESOLVED.
-          e.args.foreach( x => analyzeExprTreeMethod(x,m) )
+            e.args.foreach( x => analyzeExprTreeMethod(x,m) )
 
         case e : Assign => m.lookupVar(e.id.value) match {
-          case Some(sym) => e.id.setSymbol(sym)
+          case Some(sym) => e.id.setSymbol(sym); usedSet -= sym;
           case None => error("var " + e.id.value + " not declared.",t)
         }
           analyzeExprTreeMethod(e.expr,m);

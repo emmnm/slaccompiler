@@ -57,7 +57,6 @@ object CodeGeneration extends Pipeline[Program, Unit] {
                 x.id.value,
                 x.args.map(x => generateTypeString(x.tpe.getType)).mkString("")
             ).codeHandler
-        println("===" + x.id.value)
         generateMethodCode(ch,x)
       })
 
@@ -80,7 +79,7 @@ object CodeGeneration extends Pipeline[Program, Unit] {
       val ordering = formals ++ locals
 
       def slotFor(e: Symbol ) : Int = {
-        ordering(e)
+        ordering.getOrElse(e,-1)
       }
 
       def generateExprCode(expr: ExprTree): Unit = {
@@ -117,23 +116,32 @@ object CodeGeneration extends Pipeline[Program, Unit] {
                 generateExprCode(e.lhs); generateExprCode(e.rhs);
                 val s = ch.getFreshLabel("lt")
                 ch << If_ICmpLt(s) << POP << ICONST_0 << Label(s)
+
           case e : Equals => { val s_cond = ch.getFreshLabel("cond")
             ch << ICONST_1
             generateExprCode(e.lhs); generateExprCode(e.rhs)
             (e.lhs.getType,e.rhs.getType) match {
               case (TInt,TInt) => ch << If_ICmpEq(s_cond)
-              case (TBoolean, TBoolean) => If_ICmpEq(s_cond)
-              case _ => If_ACmpEq(s_cond)
+              case (TBoolean, TBoolean) => ch << If_ICmpEq(s_cond)
+              case _ => ch << If_ACmpEq(s_cond)
             }
             ch << POP << ICONST_0 << Label(s_cond)
           }
+
+
+
           case e : ArrayRead => generateExprCode(e.arr); generateExprCode(e.index); ch << IALOAD
           case e : ArrayLength => generateExprCode(e.arr); ch << ARRAYLENGTH;
           case e : MethodCall => {
             generateExprCode(e.obj);  e.args.foreach{ generateExprCode }
             e.obj.getType match {
-              case TObject(o) => ch << InvokeVirtual(o.name,e.meth.value,
-                    e.args.map(x => generateTypeString(x.getType)).mkString("(","",")") + generateTypeString(e.getType))
+              case TObject(o) => 
+                o.lookupMethod(e.meth.value) match {
+                  case Some(jkl) =>
+                    ch << InvokeVirtual(o.name,e.meth.value,
+                    jkl.argList.map(x => generateTypeString(x.getType)).mkString("(","",")") + generateTypeString(e.getType))
+                  case None => System.err.println("internal error")
+                }
 
               case _ => System.err.println("Internal Error")
             }
@@ -142,17 +150,17 @@ object CodeGeneration extends Pipeline[Program, Unit] {
           case e : StringLit => ch << Ldc(e.value)
           case e : True => ch << ICONST_1
           case e : False => ch << ICONST_0
-          case e : Identifier => 
-            classSym.lookupVar(e.value) match {
-              case Some(a) => ch << ALoad(0) << GetField(classSym.name,a.name,generateTypeString(a.getType))
-              case None =>  e.getType match {
-                case TInt => ch << ILoad( slotFor(e.getSymbol) )
-                case TBoolean => ch << ILoad( slotFor(e.getSymbol) )
-                case TIntArray => ch << ALoad( slotFor(e.getSymbol) )
-                case TString => ch << ALoad( slotFor(e.getSymbol) )
-                case TObject(a) => ch << ALoad( slotFor(e.getSymbol) )
-                case _ => System.err.println("Internal Error: Wrong Type Value for Identifier")
-              }
+          case e : Identifier => // no shadowing.
+            slotFor(e.getSymbol) match {
+                case -1 => ch << ALoad(0) << GetField(classSym.name,e.getSymbol.name,generateTypeString(e.getSymbol.getType))
+                case n => e.getType match {
+                  case TInt => ch << ILoad( n )
+                  case TBoolean => ch << ILoad( n )
+                  case TIntArray => ch << ALoad( n )
+                  case TString => ch << ALoad( n )
+                  case TObject(a) => ch << ALoad( n )
+                  case _ => System.err.println("Internal Error: Wrong Type Value for Identifier")
+                }
             }
           case e : Self => ch << ALoad(0)
           case e : NewIntArray => generateExprCode(e.size); ch << NewArray(10) //T_INT=10
@@ -189,23 +197,27 @@ object CodeGeneration extends Pipeline[Program, Unit] {
             ch << InvokeVirtual("java/io/PrintStream", "println", "(Ljava/lang/String;)V")
           }
           case e : Assign => {
-            classSym.lookupVar(e.id.value) match {
-              case Some(a) => ch << ALoad(0); generateExprCode(e.expr)
-                ch << PutField(classSym.name,
-                  e.id.value,generateTypeString(a.getType))
-              case None => generateExprCode(e.expr); e.id.getSymbol.getType match {
-                case TInt => ch << IStore(slotFor(e.id.getSymbol))
-                case TBoolean => ch << IStore(slotFor(e.id.getSymbol))
-                case TIntArray => ch << AStore(slotFor(e.id.getSymbol))
-                case TString => ch << AStore(slotFor(e.id.getSymbol))
-                case TObject(_) => ch << AStore(slotFor(e.id.getSymbol))
-                case _ => System.err.println("Internal Error")
+            slotFor(e.id.getSymbol) match {
+              case -1 => ch << ALoad(0);
+                  generateExprCode(e.expr);
+                  ch << PutField(classSym.name,e.id.value,generateTypeString(e.id.getSymbol.getType))
+              case n => generateExprCode(e.expr); e.id.getType match {
+                  case TInt => ch << IStore( n )
+                  case TBoolean => ch << IStore( n )
+                  case TIntArray => ch << AStore( n )
+                  case TString => ch << AStore( n )
+                  case TObject(_) => ch << AStore( n )
+                  case _ => System.err.println("Internal Error")
               }
             }
           }
           case e : ArrayAssign => {
             classSym.lookupVar(e.id.value) match {
-              case Some(a) =>
+              case Some(a) => ch << ALoad(0);
+                ch << GetField(classSym.name,e.id.value,generateTypeString(a.getType))
+                generateExprCode(e.index);
+                generateExprCode(e.expr);
+                ch << IASTORE
               case None => ch << ALoad(slotFor(e.id.getSymbol))
                 generateExprCode(e.index)
                 generateExprCode(e.expr)
@@ -223,7 +235,11 @@ object CodeGeneration extends Pipeline[Program, Unit] {
       }
 
       //exprs
-      mt.exprs.foreach(x => generateExprCode(x))
+      mt.exprs.foreach(x => {
+        generateExprCode(x)
+        if(x.getType != TUnit)  
+          ch << POP;
+      })
 
       //ret expr
       generateExprCode(mt.retExpr)
@@ -238,7 +254,6 @@ object CodeGeneration extends Pipeline[Program, Unit] {
         case TObject(_) => ch << ARETURN
         case _ => System.err.println("Internal Error")
       }
-      ch.print
       ch.freeze
     }
 

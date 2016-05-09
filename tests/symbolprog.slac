@@ -23,5 +23,5 @@ class A {
 }
 
 method main(): Unit = {
-  println(strOf(new B().foo().pirhanna()))
+  println(strOf(new B().foo(new A(),5).pirhanna()))
 }
