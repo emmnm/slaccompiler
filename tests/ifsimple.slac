@@ -1,0 +1,29 @@
+class A {
+
+}
+
+class B <: A {
+
+}
+
+class C <: A {
+
+}
+
+method main(): Unit = {
+  var a : A;
+  var b : B;
+  var c : C;
+
+  a = new A();
+  b = new B();
+  c = new C();
+
+  if(true) {
+    a
+  } else {
+    new A()
+  };
+
+  println("HI WORLD")
+}

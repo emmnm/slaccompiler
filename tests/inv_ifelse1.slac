@@ -1,0 +1,13 @@
+method main(): Unit = {
+
+  var a : Int;
+  var b : Int;
+
+
+
+  //if(true) {
+
+  //}
+
+
+}

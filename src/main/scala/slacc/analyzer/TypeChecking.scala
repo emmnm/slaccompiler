@@ -73,8 +73,14 @@ object TypeChecking extends Pipeline[Program, Program] {
         case expr : New => tcExpr(expr.tpe,anyObject)
         case expr : Not => tcExpr(expr.expr,TBoolean); TBoolean
         case expr : Block => expr.exprs.foreach( x => tcExpr(x) ); if(expr.exprs.length > 0) tcExpr(expr.exprs.last) else TUnit
-        case expr : If => { tcExpr(expr.expr,TBoolean); val t = tcExpr(expr.thn);
-            expr.els match { case Some(e) => tcExpr(e,t); t case None => TUnit}
+        case expr : If => {
+            tcExpr(expr.expr,TBoolean); //
+            expr.els match { 
+                case Some(elz) => val tt = tcExpr(expr.thn); val et = tcExpr(elz);
+                  if(tt.isSubTypeOf(et) && et.isSubTypeOf(tt)) et
+                  else { error("Non-Matching Types",expr); TError }
+                case None => tcExpr(expr.thn,TUnit); TUnit
+            }
         }
         case expr : While => tcExpr(expr.cond,TBoolean); tcExpr(expr.body,TUnit); TUnit;
         case expr : Println => tcExpr(expr.expr,TString); TUnit

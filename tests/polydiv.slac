@@ -1,0 +1,14 @@
+method main(): Unit = {
+
+  var a : Int;
+  var b : Int;
+  var c : Int;
+  var d : Int;
+
+  a = 1;
+  b = 2;
+  c = 4;
+
+  d = ( b * b ) / (c * a * b + 1);
+  println(strOf(d)) 
+}
