@@ -1,5 +1,4 @@
 class C {
-  var j : Int;
 }
 
 class B <: A {

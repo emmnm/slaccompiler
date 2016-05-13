@@ -1,11 +1,10 @@
 #!/bin/bash
-VALID_FILES="tests/valid/*.slac"
+VALID_FILES="tests/*/*.slac"
 INVALID_FILES="tests/invalid/*.slac"
 
 CMD="scala -classpath target/scala-2.11/classes slacc.Main"
 echo "Testing valid files"
-for f in $VALID_FILES
-do
+for f in tests/{valid/,invalid/,}*.slac; do
     echo -n "Checking" `basename $f` "..."
 
     rm -r out
@@ -13,29 +12,25 @@ do
     rm -r outref
     mkdir outref
 
-    echo -n "Compiling...    "
-    scala -classpath lib/cafebabe_2.11-1.2.jar:target/scala-2.11/classes slacc.Main -d out "$f"
-    scala -cp ref/cafebabe_2.11-1.2.jar ref/slacc_2.11-1.3.jar -d outref "$f"
-#    OUR_OUTPUT="$(java -cp out Main)"
-#    REF_OUTPUT="$(java -cp outref Main)"
-if [[ "$(diff -w <(java -cp out Main) <(java -cp outref Main))" ]]; then
-        echo "FAIL"
-    else
-        echo "PASS"
-#        diff <(echo $OUR_OUTPUT) <(echo $REF_OUTPUT)
-    fi
-done
+    echo -en "Compiling...\t\t"
+    OUR_OUT=$(scala -classpath lib/cafebabe_2.11-1.2.jar:target/scala-2.11/classes slacc.Main -d out "$f" 2> out/errFile)
+    OUR_ERR=$(<out/errFile)
 
-echo "Testing invalid files"
-for f in $INVALID_FILES
-do
-    echo -n "Checking" `basename $f` "..."
+    REF_OUT=$(scala -cp ref/cafebabe_2.11-1.2.jar ref/slacc_2.11-1.4.jar -d outref "$f" 2> outref/errFile)
+    REF_ERR=$(<outref/errFile)
 
-    OUR_OUTPUT=$(scala -classpath lib/cafebabe_2.11-1.2.jar:target/scala-2.11/classes slacc.Main -d out "$f")
-    REF_OUTPUT=$(scala -cp ref/cafebabe_2.11-1.2.jar ref/slacc_2.11-1.3.jar -d outref "$f")
-    if [[ ($REF_OUTPUT != "" && $OUR_OUTPUT != "") || ( $REF_OUTPUT == "" && $OUR_OUTPUT == "" )  ]]; then
-        echo "PASS"
+    if [[ -s out/errFile  && -s outref/errFile ]]; then
+        echo "PASS (ERR)"
+    elif [[ !(-s out/errFile) && !(-s outref/errFile) ]]; then
+
+      if [[ "$(diff -w <(java -cp out Main) <(java -cp outref Main))" ]]; then
+        echo "FAIL (DIF)"
+      else
+        echo "PASS (RUN)"
+      fi
+
     else
-        echo "FAIL"
+        echo "FAIL (ERR)"
     fi
+
 done
