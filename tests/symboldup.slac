@@ -1,0 +1,19 @@
+class A {
+
+  method foo(): Int = {
+    5
+  }
+
+}
+
+class B <: A {
+
+  method foo(): String = {
+    "Hello"
+  }
+
+}
+
+method main(): Unit = { 
+  println("Hello World")
+}

@@ -1,0 +1,84 @@
+class A {
+
+  var val : Bool;
+
+  method t(): Bool = {
+    println("Calling T");
+    true
+  }
+
+  method f(): Bool = {
+    println("Calling F");
+    false
+  }
+
+  method set(a : Bool): Unit = {
+    val = a
+  }
+
+  method s(): Bool = {
+    val = !val;
+    if(val) {
+      self.t()
+    } else {
+      self.f()
+    }
+  }
+}
+
+method main(): Unit = {
+  var v : A;
+
+  v = new A();
+  v.set(false);
+
+  println("Testing...");
+  if(v.t() || v.s() ) {
+    println("DONE")
+  } else {
+    println("DONE2")
+  };
+
+  if(v.t() || v.s() ) {
+    println("DONE")
+  } else {
+    println("DONE2")
+  };
+
+  if(v.f() || v.s() ) {
+    println("DONE")
+  } else {
+    println("DONE2")
+  };
+
+  if(v.f() || v.s() ) {
+    println("DONE")
+  } else {
+    println("DONE2")
+  };
+
+  if(v.t() && v.s() ) {
+    println("DONE")
+  } else {
+    println("DONE2")
+  };
+
+  if(v.t() && v.s() ) {
+    println("DONE")
+  } else {
+    println("DONE2")
+  };
+
+  if(v.f() && v.s() ) {
+    println("DONE")
+  } else {
+    println("DONE2")
+  };
+
+  if(v.f() && v.s() ) {
+    println("DONE")
+  } else {
+    println("DONE2")
+  }
+
+}

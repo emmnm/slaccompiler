@@ -16,12 +16,12 @@ do
     echo -n "Compiling...    "
     scala -classpath lib/cafebabe_2.11-1.2.jar:target/scala-2.11/classes slacc.Main -d out "$f"
     scala -cp ref/cafebabe_2.11-1.2.jar ref/slacc_2.11-1.3.jar -d outref "$f"
-    OUR_OUTPUT="$(java -cp out Main)"
-    REF_OUTPUT="$(java -cp outref Main)"
-    if [[ "${OUR_OUTPUT}" == "${REF_OUTPUT}"  ]]; then
-        echo "PASS"
-    else
+#    OUR_OUTPUT="$(java -cp out Main)"
+#    REF_OUTPUT="$(java -cp outref Main)"
+if [[ "$(diff -w <(java -cp out Main) <(java -cp outref Main))" ]]; then
         echo "FAIL"
+    else
+        echo "PASS"
 #        diff <(echo $OUR_OUTPUT) <(echo $REF_OUTPUT)
     fi
 done

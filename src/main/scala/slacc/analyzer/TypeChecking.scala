@@ -72,7 +72,7 @@ object TypeChecking extends Pipeline[Program, Program] {
         case expr : NewIntArray => tcExpr(expr.size,TInt); TIntArray
         case expr : New => tcExpr(expr.tpe,anyObject)
         case expr : Not => tcExpr(expr.expr,TBoolean); TBoolean
-        case expr : Block => expr.exprs.foreach( x => tcExpr(x) ); tcExpr(expr.exprs.last)
+        case expr : Block => expr.exprs.foreach( x => tcExpr(x) ); if(expr.exprs.length > 0) tcExpr(expr.exprs.last) else TUnit
         case expr : If => { tcExpr(expr.expr,TBoolean); val t = tcExpr(expr.thn);
             expr.els match { case Some(e) => tcExpr(e,t); t case None => TUnit}
         }

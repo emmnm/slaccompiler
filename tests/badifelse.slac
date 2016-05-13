@@ -1,0 +1,26 @@
+method main(): Unit = {
+  var a : Int;
+  var b : Int;
+  a = 0;
+  b = 0;
+
+  // a = if _ (good type and bad type)
+
+  // a = if _ else _ (same type) ( correct and incorrect type)
+
+
+  // a = if _ else _ (different types) (one correct, one incorrect)
+
+  if(true) {
+    5
+  } else {
+    println("5")
+  }
+
+//  b = if(a == 0) {
+//    "hi"
+//  } else {
+//    "hl"
+//  }
+  
+}
