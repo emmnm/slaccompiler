@@ -1,0 +1,8 @@
+method main(): Unit = {
+
+  var a : Int;
+  a = 0;
+  if( a == 0) {
+    5
+  }
+}

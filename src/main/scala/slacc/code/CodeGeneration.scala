@@ -172,7 +172,15 @@ object CodeGeneration extends Pipeline[Program, Unit] {
             generateExprCode(e.expr); ch << ICONST_1 << SWAP << IfEq(s_cond)
             ch << POP << ICONST_0 << Label(s_cond)
           }
-          case e : Block => e.exprs.foreach( generateExprCode )
+          case e : Block => if(e.exprs.length == 0) TUnit
+            else {
+              e.exprs.take(e.exprs.length-1).foreach(x => {
+              generateExprCode(x);
+              if(x.getType != TUnit) {
+                ch << POP;
+              }
+            }); generateExprCode(e.exprs.last);
+          }
           case e : If => {
             val s_els = ch.getFreshLabel("els")
             val s_don = ch.getFreshLabel("don")
@@ -181,7 +189,8 @@ object CodeGeneration extends Pipeline[Program, Unit] {
               case Some(els) => ch << IfEq(s_els); generateExprCode(e.thn);
                 ch << Goto(s_don) << Label(s_els);
                 generateExprCode(els); ch << Label(s_don)
-              case None => ch << IfEq(s_don); generateExprCode(e.thn); ch << Label(s_don)
+              case None => ch << IfEq(s_don); generateExprCode(e.thn);
+                if(e.thn.getType != TUnit) ch << POP; ch << Label(s_don)
             }
           }
           case e : While => {
