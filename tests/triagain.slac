@@ -1,0 +1,12 @@
+method main() : Unit = {
+  var a : Int;
+  var b : Bool;
+  a = 5;
+  b = true;
+  if(b) {
+    println("B=TRUE")
+  };
+  if(b)
+    println("B=TRUE");
+  {}
+}

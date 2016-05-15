@@ -1,0 +1,10 @@
+method main() : Unit = {
+  {
+    5;
+    "HI WORLD";
+    println("ANGST");
+  };
+  5;
+  3;
+  println("JKL")
+}
