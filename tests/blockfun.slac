@@ -1,0 +1,13 @@
+method main(): Unit = {
+
+  {
+  5;
+  6;
+  "hello world";
+  println("JAMES");
+  true
+  };
+
+  { 5; println("HE DID IT"); 6; "james brown" };
+  { println("off the table"); 5 }
+}

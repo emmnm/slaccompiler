@@ -3,14 +3,10 @@ method main(): Unit = {
   var a : Int;
   var b : Int;
 
-  else {
-
-  }
-
   if(true) {
-
+    5
   } else {
-
+    "hi"
   }
 
 
