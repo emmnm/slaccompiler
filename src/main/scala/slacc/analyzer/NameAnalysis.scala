@@ -63,7 +63,8 @@ object NameAnalysis extends Pipeline[Program, Program] {
         case tpe: UnitType => tpe.setType(TUnit)
         case id: Identifier => gs.lookupClass(id.value) match {
             case Some(c) => id.setSymbol(c); tpe.setType(c.getType)
-            case None => error("class type " + id.value + " not found.",id); tpe.setType(TError)
+            case None => error("class type " + id.value + " not found.",id);
+                id.setSymbol(new VariableSymbol("ERROR")); tpe.setType(TError)
           }
       }
       tpe.getType

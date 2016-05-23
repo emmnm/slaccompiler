@@ -1,0 +1,11 @@
+class LinkedList[T1] {
+
+  var value : T1;
+//  var next : LinkedList[T1];
+
+}
+
+method main(): Unit = {
+  var jack : D;
+  {}
+}

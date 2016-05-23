@@ -60,6 +60,11 @@ object Parser extends Pipeline[Iterator[Token], Program] {
       val p = currentToken;
       eat(CLASS);
       val name   = parseIdentifier;
+
+      val generic = if(currentToken.kind == LBRACKET) {
+                      eat(LBRACKET); val e = parseIdentifier; eat(RBRACKET); Some(e) }
+                    else None
+
       val parent = if(currentToken.kind == LESSTHAN) {eat(LESSTHAN);eat(COLON); Some(parseIdentifier)}
                    else None
 
@@ -68,7 +73,7 @@ object Parser extends Pipeline[Iterator[Token], Program] {
       while(currentToken.kind == METHOD) { methods = methods :+ parseMethod }
       eat(RBRACE)
 
-      ClassDecl(name,parent,vars,methods).setPos(p)
+      ClassDecl(name,generic,parent,vars,methods).setPos(p)
     }
 
     def parseVar: VarDecl = {
