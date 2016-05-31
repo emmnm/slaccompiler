@@ -1,0 +1,150 @@
+\documentclass[nocopyrightspace,11pt,authoryear,preprint]{sigplanconf}
+
+\usepackage{amsmath}
+\usepackage{listings}
+
+\begin{document}
+\input{slac-listings}
+
+\title{Generics Programming in SLAC}
+\subtitle{Compiler Construction 2016 Final Report}
+
+\authorinfo{Michael Meyer\and Trace Powers}
+           {KTH Royal Institute of Technology}
+           {\{meye\}@kth.se}
+
+\maketitle
+
+\section{Introduction}
+
+%Describe in a few words what you did in the first part of the compiler
+%project (the non-optional labs), and briefly say what problem you want
+%to solve with your extension.
+
+%This section should convince us that you have a clear picture of the
+%general architecture of your compiler and that you understand how your
+%extension fits in it.
+
+In the required parts of the compiler project, our task was to implement the 
+entire pipeline of lexing, parsing, name analysis, type checking, and code generation.
+
+Each of these specific phases transforms the current representation of the 
+
+
+\section{Examples}
+
+Give code examples where your extension is useful, and describe how
+they work with it. Make sure you include examples where the most
+intricate features of your extension are used, so that we have an
+immediate understanding of what the challenges are.
+
+You can pretty-print code like this:
+%\begin{lstlisting}
+%class A {
+%  method foo(i: Int): Int = {
+%    var j: Int;
+%    if (i < 0) { j = 0 - i } else { j = i };
+%    j + 1
+%  }
+%}
+
+%method main(): Unit = {
+%  println(strOf(new A().foo(0-41)))
+%}
+%\end{lstlisting}
+With generics we can get started into basic data structures.
+First, we can implement Linked Lists.
+
+\begin{lstlisting}
+class LinkedList[T1] {
+  var value : T1;
+  var link  : LinkedList[T1];
+  method get() : T1 = {
+    value
+  }
+  method set(v : T1) = {
+    value = v
+  }
+  method next() : LinkedList[T1] = {
+    link
+  }
+}
+\end{lstlisting}
+
+This allows us to further define things such as Stacks and Queues...
+
+\begin{lstlisting}
+class Stack[T1] {
+  var top : LinkedList[T1]
+  
+}
+\end{lstlisting}
+
+By using generics, we can provide a richer SLAC standard library, making
+the language much more powerful.
+
+%This section should convince us that you understand how your extension can be
+%useful and that you thought about the corner cases.
+
+\section{Implementation}
+
+This is a very important section, you explain to us how you made it
+work.
+
+Describe all non-obvious tricks you used. Tell us what you thought was
+hard and why. If it took you time to figure out the solution to a
+problem, it probably means it wasn't easy and you should definitely
+describe the solution in details here. If you used what you think is a
+cool algorithm for some problem, tell us.  Do not however spend time
+describing trivial things (we know what a tree traversal is, for
+instance). Cite any reference work you used like this
+\cite{TigerBook}.
+
+%hard part.
+One issue that came up when testing was that multiple casts of the
+generic caused the compiler to fail.  Everything worked fine in a single
+cast case, but the second cast caused the type checking on the first one to fail.
+After debugging this for a few hours, we found that the issue was hidden not
+in the type checking or name analysis, but in the Generic phase of the compiler.
+This was because the tree cloning process was sharing some Identifier tree nodes.
+This caused the setSymbol command to overwrite each other.
+%debugging -  there were shared identifiers thus overwriting each other., values vs vars.
+
+%After reading this section, we should be convinced that you knew what
+%you were doing when you wrote your extension, and that you put some
+%extra consideration for the harder parts.
+
+\section{Possible Extensions}
+
+%If you did not finish what you had planned, explain here what's
+%missing.
+
+%In any case, describe how you could further extend your compiler in
+%the direction you chose. This section should convince us that you
+%understand the challenges of writing a good compiler for high-level
+%programming languages.
+
+%IF DID NOT FINISH:
+%Implement hierarchical extensions of generics.
+
+This system only supports one type generic classes. This makes it more difficult
+to implement data structures such as maps, although there probably is a special
+way to implement them using structures such as tuples.
+
+However, this is still an inconvience for the programmer
+and an arbitrary amount of generic types should be supported in the future.
+Since generics are just one solution for the general issue of code reusability,
+certain features can be tacked on to a basic generics program.
+In certain cases, most code of a class can be represented with generics, except
+for a single function, such as a library call.  It would still be useful to have
+generics for this situation, but it can't be done using the type replacement
+mechansism.  By implementing first class functions and then passing a function in
+to the type generator as well, this issue could be alieviated.  Of course,
+a wrapper class could be written instead but this is what the generic is trying
+to replace.
+
+
+\bibliographystyle{abbrvnat}
+\bibliography{bibliography.bib}
+
+\end{document}

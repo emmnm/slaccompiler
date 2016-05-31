@@ -27,6 +27,7 @@ object Trees {
   case class BooleanType() extends TypeTree
   case class StringType() extends TypeTree
   case class UnitType() extends TypeTree
+//  case class AppliedType(parent : Identifier, tpe : TypeTree) extends TypeTree // might want to change parent from String to Identifier? same thing in parsing stage tho, except positioning...
 
   sealed trait ExprTree extends Tree with Typed
   case class And(lhs: ExprTree, rhs: ExprTree) extends ExprTree
@@ -45,7 +46,7 @@ object Trees {
 
   case class True() extends ExprTree
   case class False() extends ExprTree
-  case class Identifier(value: String) extends TypeTree with ExprTree with Symbolic[Symbol] {
+  case class Identifier(value: String,cast : Option[TypeTree] = None) extends TypeTree with ExprTree with Symbolic[Symbol] {
     // The type of the identifier depends on the type of the symbol
     override def getType: Type = getSymbol match {
       case cs: ClassSymbol =>

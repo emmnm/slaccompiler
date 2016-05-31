@@ -1,11 +1,39 @@
 class LinkedList[T1] {
 
-  var value : T1;
-//  var next : LinkedList[T1];
+  var mine : T1;
+  var value : LinkedList[T1];
+  //var value3 : LinkedList[LinkedList[T1]]; //not yet.
+
+  
+
+
+  method get() : T1 = {
+    mine
+  }
+  method set(m : T1) : Unit = {
+    mine = m
+  }
+  method extend(n : Int) : Unit = {
+    if( 0 < n ) {
+      value = new LinkedList[T1]()
+      //value.set(mine);
+      //value.extend(n-1)
+    }
+  }
 
 }
 
 method main(): Unit = {
-  var jack : D;
+    var jack : LinkedList[Int];
+    var jim  : LinkedList[String];
+//  var jim : LinkedList[LinkedList[Bool]];
+
+  jack = new LinkedList[Int]();
+  jim = new LinkedList[String]();
+  jack.set(5);
+  jack.extend(10);
+  jim.set("HEY");
+  println(strOf(jack.get()));
+  println(jim.get());
   {}
 }

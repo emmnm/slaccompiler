@@ -73,7 +73,7 @@ object Parser extends Pipeline[Iterator[Token], Program] {
       while(currentToken.kind == METHOD) { methods = methods :+ parseMethod }
       eat(RBRACE)
 
-      ClassDecl(name,generic,parent,vars,methods).setPos(p)
+      ClassDecl(Identifier(name.value,generic).setPos(name),generic,parent,vars,methods).setPos(p)
     }
 
     def parseVar: VarDecl = {
@@ -114,8 +114,8 @@ object Parser extends Pipeline[Iterator[Token], Program] {
       val t = currentToken match {
         case Kinded(BOOLEAN) => eat(BOOLEAN); BooleanType(); 
         case Kinded(STRING) =>  eat(STRING); StringType(); 
-        case Kinded(UNIT) => eat(UNIT); UnitType(); 
-        case cd: ID =>  eat(IDKIND); Identifier(cd.value);
+        case Kinded(UNIT) => eat(UNIT); UnitType();
+        case cd: ID =>  eat(IDKIND); if(currentToken.kind == LBRACKET) { eat(LBRACKET); val tpe = parseType; eat(RBRACKET); Identifier(cd.value,Some(tpe)) } else Identifier(cd.value)
         case Kinded(INT) => { eat(INT);
           if (currentToken.kind == LBRACKET) { eat(LBRACKET); eat(RBRACKET); IntArrayType()}
           else { IntType() }
@@ -208,7 +208,11 @@ object Parser extends Pipeline[Iterator[Token], Program] {
           if(currentToken.kind == INT) {eat(INT); eat(LBRACKET);
             val e = parseExpression; eat(RBRACKET); NewIntArray(e).setPos(p)
           } else {
-            val i = parseIdentifier; eat(LPAREN); eat(RPAREN); New(i).setPos(p)
+            val v = parseType;
+            v match {
+            case i : Identifier => eat(LPAREN); eat(RPAREN); New(i).setPos(p)
+            case _ => fatal("expected non-primitive type",p)
+            }
           }
         }
         case Kinded(LPAREN) => eat(LPAREN); val v = parseExpression; eat(RPAREN); v.setPos(p);

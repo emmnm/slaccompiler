@@ -61,13 +61,25 @@ object NameAnalysis extends Pipeline[Program, Program] {
         case tpe: IntArrayType => tpe.setType(TIntArray)
         case tpe: StringType => tpe.setType(TString)
         case tpe: UnitType => tpe.setType(TUnit)
-        case id: Identifier => gs.lookupClass(id.value) match {
+        case id: Identifier => gs.lookupClass(tpe2str(id)) match {
             case Some(c) => id.setSymbol(c); tpe.setType(c.getType)
             case None => error("class type " + id.value + " not found.",id);
                 id.setSymbol(new VariableSymbol("ERROR")); tpe.setType(TError)
           }
       }
       tpe.getType
+    }
+
+
+    def tpe2str(tpe : TypeTree ): String = {
+      tpe match {
+      case t : IntArrayType => "Int[]"
+      case t : IntType => "Int"
+      case t : BooleanType => "Bool"
+      case t : StringType => "String"
+      case t : UnitType => "Unit"
+      case t : Identifier => t.value + "#" + (if(t.cast.isDefined) tpe2str(t.cast.get) else "")
+      }
     }
 
     def sort_classes( c1 : ClassDecl, c2 : ClassDecl ) = {
@@ -129,7 +141,6 @@ object NameAnalysis extends Pipeline[Program, Program] {
 
     /* Adds a method to a class symbol checking for any possible errors */
     def analyzeMethodClassSymbol( m : MethodDecl, c : ClassSymbol ) { 
-
       // analyze types first.
       m.args.foreach ( x => analyzeFormalMethodSymbol(x,m.getSymbol) )
       m.vars.foreach ( x => analyzeVarMethodSymbol(x,m.getSymbol) )
@@ -222,14 +233,15 @@ object NameAnalysis extends Pipeline[Program, Program] {
 
       t match {
         case id : Identifier => m.lookupVar(id.value) match {
-          case Some(sym) => id.setSymbol(sym); usedSet -= sym
+          case Some(sym) => id.setSymbol(sym); usedSet -= sym; 
           case None => error(id.value + " not declared.", t)
         }
         case s  : Self => s.setSymbol(m.classSymbol)
 
-        case e : New => gs.lookupClass(e.tpe.value) match {
-          case Some(sym) => e.tpe.setSymbol(sym)
-          case None => error("class " + e.tpe.value + " not declared.",t)
+        case e : New => val v = tpe2str(e.tpe);
+        gs.lookupClass(v) match {
+          case Some(sym) => e.tpe.setSymbol(sym);
+          case None => error("class " + v + " not declared.",t)
         }
 
         case e : MethodCall => analyzeExprTreeMethod(e.obj,m);
