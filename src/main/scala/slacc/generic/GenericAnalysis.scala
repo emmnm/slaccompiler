@@ -1,6 +1,8 @@
 package slacc
 package generic
 
+import scala.collection.immutable.Queue
+
 import utils._
 import ast.Printer
 import ast.Trees._
@@ -273,17 +275,39 @@ object GenericAnalysis extends Pipeline[Program, Program] {
     /* List of Concrete Class Definitions */
     var concreteList = List[ClassDecl]();
 
+    //convert the ClassDecl, List(Types) to a queue of Tuples.
+    var workList = List[(ClassDecl,TypeTree)]()       //Queue[(ClassDecl,TypeTree)]()
+    var implSet = Set[(ClassDecl,TypeTree)]()
 
     for((k,v) <- genM) {
-      for(elem <- v) {
-         
-//        println(Printer(cloneTree(k,elem)))
-        concreteList = cloneTree(k,elem) :: concreteList
-      }
+      workList = v.map(x => (k,x)) ::: workList
     }
 
-   //change the lookup type function in TypeChecking to get proper type! by modifying map
-//access. easier than creating new tree lol.
+/*
+  val q0 = collection.immutable.Queue("1","Two","iii")
+  Iterator.iterate(q0) { qi =>
+    val (e,q) = qi.dequeue
+    println("I just dequeued "+e)  // Your side-effecting operations go here
+    if (e.length!=2) q.enqueue("..")  // Your changes to the queue go here
+    else q
+  }.takeWhile(! _.isEmpty).foreach(identity)
+*/
+  val q0 = Queue().enqueue(workList)
+  Iterator.iterate(q0) { qi =>
+    val (e,q) = qi.dequeue
+    //side effects.
+    if(!(implSet contains e)) {
+      val newTree = cloneTree(e._1,e._2)
+      concreteList = newTree :: concreteList
+      implSet = implSet + e
+      val depLst = genericList.foldLeft(List[(ClassDecl,TypeTree)]())( (acc,x) => scanTree(newTree,x).map( y => (x,y) ) ::: acc )
+      q.enqueue(depLst)
+    } else {
+      q
+    }
+    //scanTree(newTree,classDecl ) for all ClassDecl and then returns a list of types.
+    //q.enqueue() //enqueue new list from newTree by scanTree all 
+  }.takeWhile(!_.isEmpty).foreach(identity)
 
 
     /* Step 3: Delete all abstract generic classes from program. */

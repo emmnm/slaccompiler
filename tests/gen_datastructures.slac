@@ -1,0 +1,55 @@
+class LinkedList[T1] {
+
+  var value : T1;
+  var next  : LinkedList[T1];
+  var hasNext : Bool;
+
+  method create( v : T1 ) : LinkedList[T1] = {
+    value = v;
+    hasNext = false;
+    self
+  }
+
+  method get() : T1 = {
+    value
+  }
+  method get_n(n : Int) : T1 = {
+    if(0 < n) {
+      next.get_n(n-1)
+    } else {
+      self.get()
+    }
+  }
+
+  method set(v : T1) : Unit = {
+    value = v
+  }
+
+  method push_end(v : T1) : Unit = {
+    if(hasNext) {
+      next.push_end(v)
+    } else {
+      next = new LinkedList[T1]().create(v);
+      hasNext = true
+    }
+  }
+}
+
+class Stack[T] {
+  var lst : LinkedList[T];
+  method init() : Unit {
+  }
+  method 
+}
+
+method main() : Unit = {
+
+  var t : LinkedList[Int];
+  t = new LinkedList[Int]().create(5);
+  t.push_end(6);
+  t.push_end(7);
+  t.push_end(8);
+  t.push_end(9);
+  t.push_end(10);
+  println(strOf(t.get_n(2)))
+}

@@ -1,0 +1,161 @@
+class List[T] {
+
+  var val : T;
+  var next : List[T];
+  var hasNext : Bool;
+
+  method init(v : T): List[T] = {
+    val = v;
+    hasNext = false;
+    self 
+  }
+
+  method append(v : T): Unit = {
+    if(hasNext) {
+      next.append(v)
+    } else {
+      next = new List[T]().init(v);
+      hasNext = true
+    }
+  }
+
+  method attach(v : T): List[T] = {
+    var tmp : List[T];
+    tmp = new List[T]().init(v);
+    tmp.set_next(self);
+    tmp 
+  }
+
+  method set_next(v : List[T]) : Unit = {
+    next = v;
+    hasNext = true
+  }
+
+
+  method set(n : Int, v : T) : Unit = {
+    if(n == 0) {
+      val = v
+    } else {
+      next.set(n-1,v)
+    }
+  }
+
+  method get(n : Int) : T = {
+    if(n == 0) {
+      val
+    } else {
+      next.get(n-1)
+    }
+  }
+  
+  method next_pointer() : List[T] = {
+    next
+  }
+
+  method len(): Int = {
+    if(hasNext) {
+      1 + next.len()
+    } else {
+      1
+    }
+  }
+
+}
+
+class Stack[T] {
+  
+  var lst : List[T];
+
+  method init(v : T): Stack[T] = {
+    lst = new List[T]().init(v);
+    self
+  }
+
+  method push(v : T): Unit = {
+    lst = lst.attach(v)
+  }
+
+  method pop(): T = {
+    var tmp : T;
+    tmp = lst.get(0);
+    lst = lst.next_pointer();
+    tmp
+  }
+
+}
+
+class Queue[T] {
+
+  var lst : List[T];
+
+  method init(v : T): Queue[T] = {
+    lst = new List[T]().init(v);
+    self 
+  }
+  method push(v : T): Unit = {
+    lst.append(v)
+  }
+  method pop(): T = {
+    var tmp: T;
+    tmp = lst.get(0);
+    lst = lst.next_pointer();
+    tmp
+  }
+
+}
+
+class Option[T] {
+  var value : T;
+  var has : Bool;
+
+  method some(v : T): Option[T] = {
+    value = v;
+    has = true;
+    self
+  }
+  method none(): Option[T] = {
+    has = false;
+    self
+  }
+  method get(): T = {
+    value
+  }
+  method contains(): Bool = {
+    has
+  }
+}
+
+method main() : Unit = {
+
+  //var m : List[Int];
+  var stk : Stack[Int];
+  var que : Queue[Int];
+  var opt : Option[Int];
+  var c : Int;
+
+  opt = new Option[Int]().none();
+
+  stk = new Stack[Int]().init(10);
+  stk.push(20);
+  stk.push(30);
+
+  que = new Queue[Int]().init(10);
+  que.push(20);
+  que.push(30);
+ 
+  c = 3;
+  while(0 < c) {
+    println("ITER");
+    println("stack" + strOf(stk.pop()));
+    println("queue" + strOf(que.pop()));
+    c = c - 1
+  };
+
+  if(opt.contains()) {
+    println("OPT has value: " + strOf(opt.get()))
+  } else {
+    println("OPT has no value")
+  };
+
+  println("DONE")
+}
